@@ -16,11 +16,8 @@ from proofwriter_test import (DEPTHS, EVAL_PATH, LABELS, MAX_NEW_TOKENS, ROOT,
 BF16_MODEL = "mlx-community/Qwen3-4B-Instruct-2507-bf16"
 # 8/4-bit are built from the BF16 checkpoint with:
 #   mlx_lm convert --hf-path <bf16 snapshot> --mlx-path models/<name> -q --q-bits B --q-group-size 64
-PRECISIONS = {
-    "bf16": BF16_MODEL,
-    "8bit": str(ROOT / "models" / "Qwen3-4B-Instruct-2507-8bit"),
-    "4bit": str(ROOT / "models" / "Qwen3-4B-Instruct-2507-4bit"),
-}
+PRECISIONS = {"bf16": BF16_MODEL, **{
+    f"{b}bit": str(ROOT / "models" / f"Qwen3-4B-Instruct-2507-{b}bit") for b in (8, 6, 5, 4, 3)}}
 
 
 def interleaved_order(examples):
@@ -116,7 +113,7 @@ def main():
     from mlx_lm import load
     # MLX's buffer cache is unbounded by default and grew to swap-inducing size on an
     # 18 GB machine over 540 variable-length prompts; cap it and free it per example.
-    mx.set_cache_limit(args.cache_limit_gb * 2**30)
+    mx.set_cache_limit(int(args.cache_limit_gb * 2**30))
     model, tokenizer = load(model_name)
 
     def predict(prompt):
