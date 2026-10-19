@@ -1,0 +1,957 @@
+{
+  "n_items": 540,
+  "bootstrap": {
+    "resamples": 10000,
+    "seed": 0,
+    "scheme": "paired, within depth"
+  },
+  "accuracy": [
+    {
+      "precision": "bf16",
+      "depth": 0,
+      "correct": 81,
+      "n": 90,
+      "acc": 0.9,
+      "lo": 0.8207582504900677,
+      "hi": 0.9464932485629876,
+      "invalid": 0
+    },
+    {
+      "precision": "bf16",
+      "depth": 1,
+      "correct": 47,
+      "n": 90,
+      "acc": 0.5222222222222223,
+      "lo": 0.4202456383503146,
+      "hi": 0.6223794449304108,
+      "invalid": 1
+    },
+    {
+      "precision": "bf16",
+      "depth": 2,
+      "correct": 39,
+      "n": 90,
+      "acc": 0.43333333333333335,
+      "lo": 0.3357657245944745,
+      "hi": 0.5363590255633497,
+      "invalid": 0
+    },
+    {
+      "precision": "bf16",
+      "depth": 3,
+      "correct": 41,
+      "n": 90,
+      "acc": 0.45555555555555555,
+      "lo": 0.35659616834046715,
+      "hi": 0.5581536650980822,
+      "invalid": 1
+    },
+    {
+      "precision": "bf16",
+      "depth": 4,
+      "correct": 39,
+      "n": 90,
+      "acc": 0.43333333333333335,
+      "lo": 0.3357657245944745,
+      "hi": 0.5363590255633497,
+      "invalid": 1
+    },
+    {
+      "precision": "bf16",
+      "depth": 5,
+      "correct": 40,
+      "n": 90,
+      "acc": 0.4444444444444444,
+      "lo": 0.3461565555622359,
+      "hi": 0.5472807362359509,
+      "invalid": 1
+    },
+    {
+      "precision": "8bit",
+      "depth": 0,
+      "correct": 81,
+      "n": 90,
+      "acc": 0.9,
+      "lo": 0.8207582504900677,
+      "hi": 0.9464932485629876,
+      "invalid": 0
+    },
+    {
+      "precision": "8bit",
+      "depth": 1,
+      "correct": 46,
+      "n": 90,
+      "acc": 0.5111111111111111,
+      "lo": 0.40951745708084497,
+      "hi": 0.6117950845595176,
+      "invalid": 1
+    },
+    {
+      "precision": "8bit",
+      "depth": 2,
+      "correct": 39,
+      "n": 90,
+      "acc": 0.43333333333333335,
+      "lo": 0.3357657245944745,
+      "hi": 0.5363590255633497,
+      "invalid": 0
+    },
+    {
+      "precision": "8bit",
+      "depth": 3,
+      "correct": 42,
+      "n": 90,
+      "acc": 0.4666666666666667,
+      "lo": 0.3670842488338195,
+      "hi": 0.5689781262450926,
+      "invalid": 1
+    },
+    {
+      "precision": "8bit",
+      "depth": 4,
+      "correct": 41,
+      "n": 90,
+      "acc": 0.45555555555555555,
+      "lo": 0.35659616834046715,
+      "hi": 0.5581536650980822,
+      "invalid": 1
+    },
+    {
+      "precision": "8bit",
+      "depth": 5,
+      "correct": 42,
+      "n": 90,
+      "acc": 0.4666666666666667,
+      "lo": 0.3670842488338195,
+      "hi": 0.5689781262450926,
+      "invalid": 1
+    },
+    {
+      "precision": "4bit",
+      "depth": 0,
+      "correct": 72,
+      "n": 90,
+      "acc": 0.8,
+      "lo": 0.7058626356695865,
+      "hi": 0.869575988620205,
+      "invalid": 0
+    },
+    {
+      "precision": "4bit",
+      "depth": 1,
+      "correct": 36,
+      "n": 90,
+      "acc": 0.4,
+      "lo": 0.30489019806356116,
+      "hi": 0.5032969271731751,
+      "invalid": 7
+    },
+    {
+      "precision": "4bit",
+      "depth": 2,
+      "correct": 37,
+      "n": 90,
+      "acc": 0.4111111111111111,
+      "lo": 0.31513203953888885,
+      "hi": 0.5143676273382101,
+      "invalid": 9
+    },
+    {
+      "precision": "4bit",
+      "depth": 3,
+      "correct": 33,
+      "n": 90,
+      "acc": 0.36666666666666664,
+      "lo": 0.2744725471318348,
+      "hi": 0.4697769531838133,
+      "invalid": 12
+    },
+    {
+      "precision": "4bit",
+      "depth": 4,
+      "correct": 28,
+      "n": 90,
+      "acc": 0.3111111111111111,
+      "lo": 0.22485854587127468,
+      "hi": 0.41282824624256037,
+      "invalid": 16
+    },
+    {
+      "precision": "4bit",
+      "depth": 5,
+      "correct": 26,
+      "n": 90,
+      "acc": 0.28888888888888886,
+      "lo": 0.20542127201943333,
+      "hi": 0.3896404368136764,
+      "invalid": 13
+    }
+  ],
+  "penalty": [
+    {
+      "precision": "8bit",
+      "depth": 0,
+      "delta": 0.0,
+      "lo": 0.0,
+      "hi": 0.0,
+      "lost": 0,
+      "gained": 0
+    },
+    {
+      "precision": "8bit",
+      "depth": 1,
+      "delta": 0.011111111111111183,
+      "lo": 0.0,
+      "hi": 0.03333333333333338,
+      "lost": 1,
+      "gained": 0
+    },
+    {
+      "precision": "8bit",
+      "depth": 2,
+      "delta": 0.0,
+      "lo": 0.0,
+      "hi": 0.0,
+      "lost": 0,
+      "gained": 0
+    },
+    {
+      "precision": "8bit",
+      "depth": 3,
+      "delta": -0.011111111111111127,
+      "lo": -0.03333333333333338,
+      "hi": 0.0,
+      "lost": 0,
+      "gained": 1
+    },
+    {
+      "precision": "8bit",
+      "depth": 4,
+      "delta": -0.0222222222222222,
+      "lo": -0.05555555555555558,
+      "hi": 0.0,
+      "lost": 0,
+      "gained": 2
+    },
+    {
+      "precision": "8bit",
+      "depth": 5,
+      "delta": -0.022222222222222254,
+      "lo": -0.05555555555555558,
+      "hi": 0.0,
+      "lost": 0,
+      "gained": 2
+    },
+    {
+      "precision": "4bit",
+      "depth": 0,
+      "delta": 0.09999999999999998,
+      "lo": 0.033333333333333326,
+      "hi": 0.16666666666666674,
+      "lost": 10,
+      "gained": 1
+    },
+    {
+      "precision": "4bit",
+      "depth": 1,
+      "delta": 0.12222222222222223,
+      "lo": 0.03333333333333338,
+      "hi": 0.21111111111111108,
+      "lost": 14,
+      "gained": 3
+    },
+    {
+      "precision": "4bit",
+      "depth": 2,
+      "delta": 0.022222222222222254,
+      "lo": -0.05555555555555558,
+      "hi": 0.10000000000000003,
+      "lost": 8,
+      "gained": 6
+    },
+    {
+      "precision": "4bit",
+      "depth": 3,
+      "delta": 0.0888888888888889,
+      "lo": 0.0,
+      "hi": 0.17777777777777776,
+      "lost": 13,
+      "gained": 5
+    },
+    {
+      "precision": "4bit",
+      "depth": 4,
+      "delta": 0.12222222222222223,
+      "lo": 0.011111111111111127,
+      "hi": 0.23333333333333328,
+      "lost": 18,
+      "gained": 7
+    },
+    {
+      "precision": "4bit",
+      "depth": 5,
+      "delta": 0.15555555555555556,
+      "lo": 0.07777777777777778,
+      "hi": 0.24444444444444446,
+      "lost": 16,
+      "gained": 2
+    }
+  ],
+  "trend": [
+    {
+      "precision": "8bit",
+      "overall_delta": -0.007407407407407418,
+      "overall_ci": [
+        -0.016666666666666663,
+        0.001851851851851836
+      ],
+      "slope_per_depth": -0.006349206349206359,
+      "slope_ci": [
+        -0.012380952380952378,
+        -0.0015873015873015832
+      ],
+      "delta_d5_minus_d0": -0.022222222222222254,
+      "gap_ci": [
+        -0.05555555555555558,
+        0.0
+      ]
+    },
+    {
+      "precision": "4bit",
+      "overall_delta": 0.1018518518518518,
+      "overall_ci": [
+        0.06662037037037039,
+        0.13888888888888887
+      ],
+      "slope_per_depth": 0.009841269841269845,
+      "slope_ci": [
+        -0.009523809523809502,
+        0.030158730158730152
+      ],
+      "delta_d5_minus_d0": 0.05555555555555558,
+      "gap_ci": [
+        -0.055555555555555525,
+        0.16666666666666663
+      ]
+    }
+  ],
+  "per_class": [
+    {
+      "precision": "bf16",
+      "depth": 0,
+      "gold": "True",
+      "correct": 30,
+      "n": 30,
+      "acc": 1.0
+    },
+    {
+      "precision": "bf16",
+      "depth": 0,
+      "gold": "False",
+      "correct": 26,
+      "n": 30,
+      "acc": 0.8666666666666667
+    },
+    {
+      "precision": "bf16",
+      "depth": 0,
+      "gold": "Unknown",
+      "correct": 25,
+      "n": 30,
+      "acc": 0.8333333333333334
+    },
+    {
+      "precision": "bf16",
+      "depth": 1,
+      "gold": "True",
+      "correct": 19,
+      "n": 30,
+      "acc": 0.6333333333333333
+    },
+    {
+      "precision": "bf16",
+      "depth": 1,
+      "gold": "False",
+      "correct": 10,
+      "n": 30,
+      "acc": 0.3333333333333333
+    },
+    {
+      "precision": "bf16",
+      "depth": 1,
+      "gold": "Unknown",
+      "correct": 18,
+      "n": 30,
+      "acc": 0.6
+    },
+    {
+      "precision": "bf16",
+      "depth": 2,
+      "gold": "True",
+      "correct": 12,
+      "n": 30,
+      "acc": 0.4
+    },
+    {
+      "precision": "bf16",
+      "depth": 2,
+      "gold": "False",
+      "correct": 8,
+      "n": 30,
+      "acc": 0.26666666666666666
+    },
+    {
+      "precision": "bf16",
+      "depth": 2,
+      "gold": "Unknown",
+      "correct": 19,
+      "n": 30,
+      "acc": 0.6333333333333333
+    },
+    {
+      "precision": "bf16",
+      "depth": 3,
+      "gold": "True",
+      "correct": 18,
+      "n": 30,
+      "acc": 0.6
+    },
+    {
+      "precision": "bf16",
+      "depth": 3,
+      "gold": "False",
+      "correct": 11,
+      "n": 30,
+      "acc": 0.36666666666666664
+    },
+    {
+      "precision": "bf16",
+      "depth": 3,
+      "gold": "Unknown",
+      "correct": 12,
+      "n": 30,
+      "acc": 0.4
+    },
+    {
+      "precision": "bf16",
+      "depth": 4,
+      "gold": "True",
+      "correct": 13,
+      "n": 30,
+      "acc": 0.43333333333333335
+    },
+    {
+      "precision": "bf16",
+      "depth": 4,
+      "gold": "False",
+      "correct": 9,
+      "n": 30,
+      "acc": 0.3
+    },
+    {
+      "precision": "bf16",
+      "depth": 4,
+      "gold": "Unknown",
+      "correct": 17,
+      "n": 30,
+      "acc": 0.5666666666666667
+    },
+    {
+      "precision": "bf16",
+      "depth": 5,
+      "gold": "True",
+      "correct": 16,
+      "n": 30,
+      "acc": 0.5333333333333333
+    },
+    {
+      "precision": "bf16",
+      "depth": 5,
+      "gold": "False",
+      "correct": 7,
+      "n": 30,
+      "acc": 0.23333333333333334
+    },
+    {
+      "precision": "bf16",
+      "depth": 5,
+      "gold": "Unknown",
+      "correct": 17,
+      "n": 30,
+      "acc": 0.5666666666666667
+    },
+    {
+      "precision": "8bit",
+      "depth": 0,
+      "gold": "True",
+      "correct": 30,
+      "n": 30,
+      "acc": 1.0
+    },
+    {
+      "precision": "8bit",
+      "depth": 0,
+      "gold": "False",
+      "correct": 26,
+      "n": 30,
+      "acc": 0.8666666666666667
+    },
+    {
+      "precision": "8bit",
+      "depth": 0,
+      "gold": "Unknown",
+      "correct": 25,
+      "n": 30,
+      "acc": 0.8333333333333334
+    },
+    {
+      "precision": "8bit",
+      "depth": 1,
+      "gold": "True",
+      "correct": 19,
+      "n": 30,
+      "acc": 0.6333333333333333
+    },
+    {
+      "precision": "8bit",
+      "depth": 1,
+      "gold": "False",
+      "correct": 10,
+      "n": 30,
+      "acc": 0.3333333333333333
+    },
+    {
+      "precision": "8bit",
+      "depth": 1,
+      "gold": "Unknown",
+      "correct": 17,
+      "n": 30,
+      "acc": 0.5666666666666667
+    },
+    {
+      "precision": "8bit",
+      "depth": 2,
+      "gold": "True",
+      "correct": 12,
+      "n": 30,
+      "acc": 0.4
+    },
+    {
+      "precision": "8bit",
+      "depth": 2,
+      "gold": "False",
+      "correct": 8,
+      "n": 30,
+      "acc": 0.26666666666666666
+    },
+    {
+      "precision": "8bit",
+      "depth": 2,
+      "gold": "Unknown",
+      "correct": 19,
+      "n": 30,
+      "acc": 0.6333333333333333
+    },
+    {
+      "precision": "8bit",
+      "depth": 3,
+      "gold": "True",
+      "correct": 18,
+      "n": 30,
+      "acc": 0.6
+    },
+    {
+      "precision": "8bit",
+      "depth": 3,
+      "gold": "False",
+      "correct": 11,
+      "n": 30,
+      "acc": 0.36666666666666664
+    },
+    {
+      "precision": "8bit",
+      "depth": 3,
+      "gold": "Unknown",
+      "correct": 13,
+      "n": 30,
+      "acc": 0.43333333333333335
+    },
+    {
+      "precision": "8bit",
+      "depth": 4,
+      "gold": "True",
+      "correct": 13,
+      "n": 30,
+      "acc": 0.43333333333333335
+    },
+    {
+      "precision": "8bit",
+      "depth": 4,
+      "gold": "False",
+      "correct": 11,
+      "n": 30,
+      "acc": 0.36666666666666664
+    },
+    {
+      "precision": "8bit",
+      "depth": 4,
+      "gold": "Unknown",
+      "correct": 17,
+      "n": 30,
+      "acc": 0.5666666666666667
+    },
+    {
+      "precision": "8bit",
+      "depth": 5,
+      "gold": "True",
+      "correct": 17,
+      "n": 30,
+      "acc": 0.5666666666666667
+    },
+    {
+      "precision": "8bit",
+      "depth": 5,
+      "gold": "False",
+      "correct": 8,
+      "n": 30,
+      "acc": 0.26666666666666666
+    },
+    {
+      "precision": "8bit",
+      "depth": 5,
+      "gold": "Unknown",
+      "correct": 17,
+      "n": 30,
+      "acc": 0.5666666666666667
+    },
+    {
+      "precision": "4bit",
+      "depth": 0,
+      "gold": "True",
+      "correct": 30,
+      "n": 30,
+      "acc": 1.0
+    },
+    {
+      "precision": "4bit",
+      "depth": 0,
+      "gold": "False",
+      "correct": 19,
+      "n": 30,
+      "acc": 0.6333333333333333
+    },
+    {
+      "precision": "4bit",
+      "depth": 0,
+      "gold": "Unknown",
+      "correct": 23,
+      "n": 30,
+      "acc": 0.7666666666666667
+    },
+    {
+      "precision": "4bit",
+      "depth": 1,
+      "gold": "True",
+      "correct": 18,
+      "n": 30,
+      "acc": 0.6
+    },
+    {
+      "precision": "4bit",
+      "depth": 1,
+      "gold": "False",
+      "correct": 5,
+      "n": 30,
+      "acc": 0.16666666666666666
+    },
+    {
+      "precision": "4bit",
+      "depth": 1,
+      "gold": "Unknown",
+      "correct": 13,
+      "n": 30,
+      "acc": 0.43333333333333335
+    },
+    {
+      "precision": "4bit",
+      "depth": 2,
+      "gold": "True",
+      "correct": 16,
+      "n": 30,
+      "acc": 0.5333333333333333
+    },
+    {
+      "precision": "4bit",
+      "depth": 2,
+      "gold": "False",
+      "correct": 6,
+      "n": 30,
+      "acc": 0.2
+    },
+    {
+      "precision": "4bit",
+      "depth": 2,
+      "gold": "Unknown",
+      "correct": 15,
+      "n": 30,
+      "acc": 0.5
+    },
+    {
+      "precision": "4bit",
+      "depth": 3,
+      "gold": "True",
+      "correct": 20,
+      "n": 30,
+      "acc": 0.6666666666666666
+    },
+    {
+      "precision": "4bit",
+      "depth": 3,
+      "gold": "False",
+      "correct": 4,
+      "n": 30,
+      "acc": 0.13333333333333333
+    },
+    {
+      "precision": "4bit",
+      "depth": 3,
+      "gold": "Unknown",
+      "correct": 9,
+      "n": 30,
+      "acc": 0.3
+    },
+    {
+      "precision": "4bit",
+      "depth": 4,
+      "gold": "True",
+      "correct": 18,
+      "n": 30,
+      "acc": 0.6
+    },
+    {
+      "precision": "4bit",
+      "depth": 4,
+      "gold": "False",
+      "correct": 1,
+      "n": 30,
+      "acc": 0.03333333333333333
+    },
+    {
+      "precision": "4bit",
+      "depth": 4,
+      "gold": "Unknown",
+      "correct": 9,
+      "n": 30,
+      "acc": 0.3
+    },
+    {
+      "precision": "4bit",
+      "depth": 5,
+      "gold": "True",
+      "correct": 16,
+      "n": 30,
+      "acc": 0.5333333333333333
+    },
+    {
+      "precision": "4bit",
+      "depth": 5,
+      "gold": "False",
+      "correct": 4,
+      "n": 30,
+      "acc": 0.13333333333333333
+    },
+    {
+      "precision": "4bit",
+      "depth": 5,
+      "gold": "Unknown",
+      "correct": 6,
+      "n": 30,
+      "acc": 0.2
+    }
+  ],
+  "pred_share": [
+    {
+      "precision": "bf16",
+      "depth": 0,
+      "True": 0.4,
+      "False": 0.3111111111111111,
+      "Unknown": 0.28888888888888886,
+      "INVALID": 0.0
+    },
+    {
+      "precision": "bf16",
+      "depth": 1,
+      "True": 0.4,
+      "False": 0.16666666666666666,
+      "Unknown": 0.4222222222222222,
+      "INVALID": 0.011111111111111112
+    },
+    {
+      "precision": "bf16",
+      "depth": 2,
+      "True": 0.28888888888888886,
+      "False": 0.15555555555555556,
+      "Unknown": 0.5555555555555556,
+      "INVALID": 0.0
+    },
+    {
+      "precision": "bf16",
+      "depth": 3,
+      "True": 0.4222222222222222,
+      "False": 0.24444444444444444,
+      "Unknown": 0.32222222222222224,
+      "INVALID": 0.011111111111111112
+    },
+    {
+      "precision": "bf16",
+      "depth": 4,
+      "True": 0.3888888888888889,
+      "False": 0.14444444444444443,
+      "Unknown": 0.45555555555555555,
+      "INVALID": 0.011111111111111112
+    },
+    {
+      "precision": "bf16",
+      "depth": 5,
+      "True": 0.4,
+      "False": 0.12222222222222222,
+      "Unknown": 0.4666666666666667,
+      "INVALID": 0.011111111111111112
+    },
+    {
+      "precision": "8bit",
+      "depth": 0,
+      "True": 0.4,
+      "False": 0.3111111111111111,
+      "Unknown": 0.28888888888888886,
+      "INVALID": 0.0
+    },
+    {
+      "precision": "8bit",
+      "depth": 1,
+      "True": 0.3888888888888889,
+      "False": 0.17777777777777778,
+      "Unknown": 0.4222222222222222,
+      "INVALID": 0.011111111111111112
+    },
+    {
+      "precision": "8bit",
+      "depth": 2,
+      "True": 0.28888888888888886,
+      "False": 0.15555555555555556,
+      "Unknown": 0.5555555555555556,
+      "INVALID": 0.0
+    },
+    {
+      "precision": "8bit",
+      "depth": 3,
+      "True": 0.4222222222222222,
+      "False": 0.25555555555555554,
+      "Unknown": 0.3111111111111111,
+      "INVALID": 0.011111111111111112
+    },
+    {
+      "precision": "8bit",
+      "depth": 4,
+      "True": 0.37777777777777777,
+      "False": 0.16666666666666666,
+      "Unknown": 0.4444444444444444,
+      "INVALID": 0.011111111111111112
+    },
+    {
+      "precision": "8bit",
+      "depth": 5,
+      "True": 0.4111111111111111,
+      "False": 0.13333333333333333,
+      "Unknown": 0.4444444444444444,
+      "INVALID": 0.011111111111111112
+    },
+    {
+      "precision": "4bit",
+      "depth": 0,
+      "True": 0.4666666666666667,
+      "False": 0.24444444444444444,
+      "Unknown": 0.28888888888888886,
+      "INVALID": 0.0
+    },
+    {
+      "precision": "4bit",
+      "depth": 1,
+      "True": 0.4888888888888889,
+      "False": 0.1,
+      "Unknown": 0.3333333333333333,
+      "INVALID": 0.07777777777777778
+    },
+    {
+      "precision": "4bit",
+      "depth": 2,
+      "True": 0.37777777777777777,
+      "False": 0.12222222222222222,
+      "Unknown": 0.4,
+      "INVALID": 0.1
+    },
+    {
+      "precision": "4bit",
+      "depth": 3,
+      "True": 0.5,
+      "False": 0.13333333333333333,
+      "Unknown": 0.23333333333333334,
+      "INVALID": 0.13333333333333333
+    },
+    {
+      "precision": "4bit",
+      "depth": 4,
+      "True": 0.4666666666666667,
+      "False": 0.044444444444444446,
+      "Unknown": 0.3111111111111111,
+      "INVALID": 0.17777777777777778
+    },
+    {
+      "precision": "4bit",
+      "depth": 5,
+      "True": 0.4666666666666667,
+      "False": 0.08888888888888889,
+      "Unknown": 0.3,
+      "INVALID": 0.14444444444444443
+    }
+  ],
+  "flags": [
+    "floor: 4bit depth 1 95% CI [0.30, 0.50] includes chance (0.33)",
+    "floor: 4bit depth 2 95% CI [0.32, 0.51] includes chance (0.33)",
+    "floor: 4bit depth 3 95% CI [0.27, 0.47] includes chance (0.33)",
+    "floor: 4bit depth 4 95% CI [0.22, 0.41] includes chance (0.33)",
+    "floor: 4bit depth 5 95% CI [0.21, 0.39] includes chance (0.33)"
+  ],
+  "provenance": {
+    "bf16": {
+      "type": "header",
+      "model": "mlx-community/Qwen3-4B-Instruct-2507-bf16",
+      "eval_set_sha256": "793b6baab4bf76ee626a666c9101607ca9e218bc77a6d359ee719279f8a91e85",
+      "prompts_sha256": "8e01678523dd7fae3a73f65b844bdd271a6a637b15d1086ac2c17163d7f54bbb",
+      "decoding": {
+        "method": "greedy",
+        "max_new_tokens": 5
+      }
+    },
+    "8bit": {
+      "type": "header",
+      "model": "/Users/zanbhatti/Desktop/ml-optimization/quantized-reasoning/models/Qwen3-4B-Instruct-2507-8bit",
+      "eval_set_sha256": "793b6baab4bf76ee626a666c9101607ca9e218bc77a6d359ee719279f8a91e85",
+      "prompts_sha256": "8e01678523dd7fae3a73f65b844bdd271a6a637b15d1086ac2c17163d7f54bbb",
+      "decoding": {
+        "method": "greedy",
+        "max_new_tokens": 5
+      }
+    },
+    "4bit": {
+      "type": "header",
+      "model": "/Users/zanbhatti/Desktop/ml-optimization/quantized-reasoning/models/Qwen3-4B-Instruct-2507-4bit",
+      "eval_set_sha256": "793b6baab4bf76ee626a666c9101607ca9e218bc77a6d359ee719279f8a91e85",
+      "prompts_sha256": "8e01678523dd7fae3a73f65b844bdd271a6a637b15d1086ac2c17163d7f54bbb",
+      "decoding": {
+        "method": "greedy",
+        "max_new_tokens": 5
+      }
+    }
+  }
+}
