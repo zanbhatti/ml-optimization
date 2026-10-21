@@ -32,7 +32,12 @@ def summarize(families):
                 row.update(d_margin=t["overall_d_margin"], d_margin_ci=t["overall_d_margin_ci"],
                            slope_d_margin=t["slope_d_margin"], slope_d_margin_ci=t["slope_d_margin_ci"])
             if p in conf:
-                row.update(deep_effect=conf[p]["deep_effect"], deep_ci=conf[p]["deep_ci"])
+                row.update(deep_effect=conf[p]["deep_effect"], deep_ci=conf[p]["deep_ci"],
+                           share={lab: conf[p][lab] for lab in ("True", "False", "Unknown")})
+            elif p == "bf16":
+                base = [json.loads(line)["prediction"] for line in
+                        (ROOT / "results" / "forced_choice" / "raw" / family / "proofwriter_bf16.jsonl").read_text().splitlines()[1:]]
+                row.update(share={lab: base.count(lab) / len(base) for lab in ("True", "False", "Unknown")})
             rows.append(row)
     return rows
 
@@ -64,6 +69,12 @@ def md(rows):
         out.append(f"| {f} | " + " | ".join(
             f"{get[f, p]['deep_effect'] * 100:+.1f} [{get[f, p]['deep_ci'][0] * 100:+.1f}, {get[f, p]['deep_ci'][1] * 100:+.1f}]"
             if (f, p) in get and "deep_effect" in get[f, p] else "—" for p in quant) + " |")
+    out += ["", "## Predicted-label shares (gold is 1/3 each): quantization shifts the label prior", "",
+            "| Model | " + " | ".join(ORDER) + " |", "|---|" + "---|" * len(ORDER)]
+    for f in families:
+        out.append(f"| {f} | " + " | ".join(
+            "T{True:.0%} F{False:.0%} U{Unknown:.0%}".format(**get[f, p]["share"]) if (f, p) in get and "share" in get[f, p] else "—"
+            for p in ORDER) + " |")
     return "\n".join(out) + "\n"
 
 
