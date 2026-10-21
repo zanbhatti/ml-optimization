@@ -1892,6 +1892,68 @@
       ]
     }
   ],
+  "confidence_control": [
+    {
+      "precision": "8bit",
+      "flip_rate": 0.020370370370370372,
+      "deep_effect": -0.003788695138523388,
+      "deep_ci": [
+        -0.012870829430048724,
+        0.0019198586384544026
+      ],
+      "True": 0.38333333333333336,
+      "False": 0.2037037037037037,
+      "Unknown": 0.412962962962963
+    },
+    {
+      "precision": "6bit",
+      "flip_rate": 0.040740740740740744,
+      "deep_effect": -0.02308316385799579,
+      "deep_ci": [
+        -0.0613706688745667,
+        0.0005378771409812685
+      ],
+      "True": 0.39814814814814814,
+      "False": 0.18703703703703703,
+      "Unknown": 0.4148148148148148
+    },
+    {
+      "precision": "5bit",
+      "flip_rate": 0.11481481481481481,
+      "deep_effect": -0.11986256147049582,
+      "deep_ci": [
+        -0.19446916890343494,
+        -0.0540691047684718
+      ],
+      "True": 0.35555555555555557,
+      "False": 0.13703703703703704,
+      "Unknown": 0.5074074074074074
+    },
+    {
+      "precision": "4bit",
+      "flip_rate": 0.21666666666666667,
+      "deep_effect": -0.10233520405038286,
+      "deep_ci": [
+        -0.1845091834532731,
+        -0.021097798292808174
+      ],
+      "True": 0.5037037037037037,
+      "False": 0.16111111111111112,
+      "Unknown": 0.3351851851851852
+    },
+    {
+      "precision": "3bit",
+      "flip_rate": 0.48703703703703705,
+      "deep_effect": 0.13727536082934408,
+      "deep_ci": [
+        0.018350699081624604,
+        0.25565579180309844
+      ],
+      "True": 0.42777777777777776,
+      "False": 0.5370370370370371,
+      "Unknown": 0.03518518518518519
+    }
+  ],
   "provenance": {
     "bf16": {
       "type": "header",
@@ -1903,7 +1965,10 @@
         "Unknown": 13790
       },
       "eval_set_sha256": "793b6baab4bf76ee626a666c9101607ca9e218bc77a6d359ee719279f8a91e85",
-      "prompts_sha256": "8e01678523dd7fae3a73f65b844bdd271a6a637b15d1086ac2c17163d7f54bbb"
+      "prompts_sha256": "8e01678523dd7fae3a73f65b844bdd271a6a637b15d1086ac2c17163d7f54bbb",
+      "chat_template_kwargs": {
+        "enable_thinking": false
+      }
     },
     "8bit": {
       "type": "header",
@@ -1915,7 +1980,10 @@
         "Unknown": 13790
       },
       "eval_set_sha256": "793b6baab4bf76ee626a666c9101607ca9e218bc77a6d359ee719279f8a91e85",
-      "prompts_sha256": "8e01678523dd7fae3a73f65b844bdd271a6a637b15d1086ac2c17163d7f54bbb"
+      "prompts_sha256": "8e01678523dd7fae3a73f65b844bdd271a6a637b15d1086ac2c17163d7f54bbb",
+      "chat_template_kwargs": {
+        "enable_thinking": false
+      }
     },
     "6bit": {
       "type": "header",
@@ -1927,7 +1995,10 @@
         "Unknown": 13790
       },
       "eval_set_sha256": "793b6baab4bf76ee626a666c9101607ca9e218bc77a6d359ee719279f8a91e85",
-      "prompts_sha256": "8e01678523dd7fae3a73f65b844bdd271a6a637b15d1086ac2c17163d7f54bbb"
+      "prompts_sha256": "8e01678523dd7fae3a73f65b844bdd271a6a637b15d1086ac2c17163d7f54bbb",
+      "chat_template_kwargs": {
+        "enable_thinking": false
+      }
     },
     "5bit": {
       "type": "header",
@@ -1939,7 +2010,10 @@
         "Unknown": 13790
       },
       "eval_set_sha256": "793b6baab4bf76ee626a666c9101607ca9e218bc77a6d359ee719279f8a91e85",
-      "prompts_sha256": "8e01678523dd7fae3a73f65b844bdd271a6a637b15d1086ac2c17163d7f54bbb"
+      "prompts_sha256": "8e01678523dd7fae3a73f65b844bdd271a6a637b15d1086ac2c17163d7f54bbb",
+      "chat_template_kwargs": {
+        "enable_thinking": false
+      }
     },
     "4bit": {
       "type": "header",
@@ -1951,7 +2025,10 @@
         "Unknown": 13790
       },
       "eval_set_sha256": "793b6baab4bf76ee626a666c9101607ca9e218bc77a6d359ee719279f8a91e85",
-      "prompts_sha256": "8e01678523dd7fae3a73f65b844bdd271a6a637b15d1086ac2c17163d7f54bbb"
+      "prompts_sha256": "8e01678523dd7fae3a73f65b844bdd271a6a637b15d1086ac2c17163d7f54bbb",
+      "chat_template_kwargs": {
+        "enable_thinking": false
+      }
     },
     "3bit": {
       "type": "header",
@@ -1963,7 +2040,10 @@
         "Unknown": 13790
       },
       "eval_set_sha256": "793b6baab4bf76ee626a666c9101607ca9e218bc77a6d359ee719279f8a91e85",
-      "prompts_sha256": "8e01678523dd7fae3a73f65b844bdd271a6a637b15d1086ac2c17163d7f54bbb"
+      "prompts_sha256": "8e01678523dd7fae3a73f65b844bdd271a6a637b15d1086ac2c17163d7f54bbb",
+      "chat_template_kwargs": {
+        "enable_thinking": false
+      }
     }
   }
 }

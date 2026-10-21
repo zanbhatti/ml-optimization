@@ -16,6 +16,7 @@ from pathlib import Path
 import numpy as np
 
 from analyze import CHANCE, ci, wilson
+from models import DEFAULT_FAMILY, FAMILIES
 from proofwriter_test import DEPTHS, LABELS, ROOT
 
 ORDER = ["bf16", "8bit", "6bit", "5bit", "4bit", "3bit"]
@@ -194,7 +195,7 @@ def summary_md(rows, trends, n_items):
     return "\n".join(out) + "\n"
 
 
-def plot(rows, trends, path):
+def plot(rows, trends, path, name):
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -233,7 +234,7 @@ def plot(rows, trends, path):
         for side in ("left", "bottom"):
             ax.spines[side].set_color("#c3c2b7")
         ax.tick_params(colors=muted, labelsize=8)
-    fig.suptitle("Qwen3-4B-Instruct on ProofWriter, forced-choice scoring, 540 paired items",
+    fig.suptitle(f"{name} on ProofWriter, forced-choice scoring, {len(set(r['depth'] for r in rows)) * rows[0]['n']} paired items",
                  fontsize=10, color=ink, x=0.01, ha="left")
     fig.tight_layout()
     fig.savefig(path, facecolor=surface)
@@ -241,9 +242,12 @@ def plot(rows, trends, path):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--runs", type=Path, default=ROOT / "results" / "forced_choice" / "raw")
-    parser.add_argument("--out-dir", type=Path, default=ROOT / "analysis" / "forced_choice")
+    parser.add_argument("--family", default=DEFAULT_FAMILY)
+    parser.add_argument("--runs", type=Path, help="Defaults to results/forced_choice/raw/<family>")
+    parser.add_argument("--out-dir", type=Path, help="Defaults to analysis/forced_choice/<family>")
     args = parser.parse_args()
+    args.runs = args.runs or ROOT / "results" / "forced_choice" / "raw" / args.family
+    args.out_dir = args.out_dir or ROOT / "analysis" / "forced_choice" / args.family
     runs, headers = {}, {}
     for p in ORDER:
         path = args.runs / f"proofwriter_{p}.jsonl"
@@ -251,7 +255,7 @@ def main():
             headers[p], runs[p] = load(path)
     assert "bf16" in runs, "BF16 baseline run is required"
     for p in runs:
-        for k in ("eval_set_sha256", "prompts_sha256", "scoring", "label_token_ids"):
+        for k in ("eval_set_sha256", "prompts_sha256", "scoring", "label_token_ids", "chat_template_kwargs"):
             assert headers[p][k] == headers["bf16"][k], f"{p} {k} differs from bf16"
     data = arrays(runs)
     rows, trends = analyze(data)
@@ -260,16 +264,19 @@ def main():
     args.out_dir.mkdir(parents=True, exist_ok=True)
     (args.out_dir / "analysis.json").write_text(json.dumps(
         {"n_items": len(data["depth"]), "bootstrap": {"resamples": BOOT, "seed": SEED},
-         "by_depth": rows, "trends": trends, "provenance": headers}, indent=2) + "\n")
+         "by_depth": rows, "trends": trends, "confidence_control": confidence_control(data)[0],
+         "provenance": headers}, indent=2) + "\n")
     for name, table in (("by_depth", rows), ("trends", trends)):
         with (args.out_dir / f"{name}.csv").open("w", newline="") as handle:
             writer = csv.DictWriter(handle, fieldnames=list(table[0]))
             writer.writeheader()
             writer.writerows(table)
     conf_rows, base_share, gaps = confidence_control(data)
-    md = summary_md(rows, trends, len(data["depth"])) + confidence_md(conf_rows, base_share, gaps)
+    name = FAMILIES.get(args.family, args.family).split("/")[-1].removesuffix("-bf16")
+    md = (summary_md(rows, trends, len(data["depth"])) + confidence_md(conf_rows, base_share, gaps)).replace(
+        "Qwen3-4B-Instruct-2507", name, 1)
     (args.out_dir / "summary.md").write_text(md)
-    plot(rows, trends, args.out_dir / "penalty_vs_bits.png")
+    plot(rows, trends, args.out_dir / "penalty_vs_bits.png", name)
     print(md)
 
 

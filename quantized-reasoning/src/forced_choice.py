@@ -12,7 +12,8 @@ from pathlib import Path
 import time
 
 from proofwriter_test import EVAL_PATH, LABELS, ROOT, build_or_load_eval_set, build_prompt
-from run_precision import PRECISIONS, interleaved_order, item_key, load_done
+from models import CHAT_TEMPLATE_KWARGS, DEFAULT_FAMILY, FAMILIES, PRECISION_NAMES, ensure_quantized, model_path
+from run_precision import interleaved_order, item_key, load_done
 
 SCORING = "forced_choice_v1: first assistant token, full-vocab log-softmax"
 
@@ -32,8 +33,8 @@ def make_scorer(model, tokenizer):
     label_ids = label_token_ids(tokenizer)
 
     def score(prompt):
-        formatted = tokenizer.apply_chat_template([{"role": "user", "content": prompt}],
-                                                  tokenize=False, add_generation_prompt=True)
+        formatted = tokenizer.apply_chat_template([{"role": "user", "content": prompt}], tokenize=False,
+                                                  add_generation_prompt=True, **CHAT_TEMPLATE_KWARGS)
         ids = tokenizer.encode(formatted)
         logits = model(mx.array([ids]))[0, -1].astype(mx.float32)
         logprobs = logits - mx.logsumexp(logits)
@@ -46,6 +47,7 @@ def make_scorer(model, tokenizer):
 
 def header_for(model_name, examples, label_ids):
     return {"type": "header", "model": model_name, "scoring": SCORING, "label_token_ids": label_ids,
+            "chat_template_kwargs": CHAT_TEMPLATE_KWARGS,
             "eval_set_sha256": hashlib.sha256(EVAL_PATH.read_bytes()).hexdigest(),
             "prompts_sha256": hashlib.sha256(json.dumps([build_prompt(e) for e in examples]).encode()).hexdigest()}
 
@@ -89,7 +91,8 @@ def run(examples, score, path, header, limit=None, log_every=50):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("precision", choices=sorted(PRECISIONS))
+    parser.add_argument("precision", choices=PRECISION_NAMES)
+    parser.add_argument("--family", choices=sorted(FAMILIES), default=DEFAULT_FAMILY)
     parser.add_argument("--model", help="Override the model path/repo for this precision tag")
     parser.add_argument("--limit", type=int)
     parser.add_argument("--out-dir", type=Path, default=ROOT / "results" / "forced_choice")
@@ -100,14 +103,17 @@ def main():
     from mlx_lm import load
     mx.set_cache_limit(int(args.cache_limit_gb * 2**30))
     examples = build_or_load_eval_set()
-    model_name = args.model or PRECISIONS[args.precision]
+    if not args.model:
+        ensure_quantized(args.family, args.precision)
+    model_name = args.model or model_path(args.family, args.precision)
     model, tokenizer = load(model_name)
     score, label_ids = make_scorer(model, tokenizer)
     header = header_for(model_name, examples, label_ids)
     sub = "smoke" if args.limit else "raw"
-    records = run(examples, score, args.out_dir / sub / f"proofwriter_{args.precision}.jsonl", header, args.limit)
+    path = args.out_dir / sub / args.family / f"proofwriter_{args.precision}.jsonl"
+    records = run(examples, score, path, header, args.limit)
     accuracy = sum(r["correct"] for r in records) / len(records)
-    print(f"{args.precision}: forced-choice accuracy {accuracy:.1%} on {len(records)}; "
+    print(f"{args.family} {args.precision}: forced-choice accuracy {accuracy:.1%} on {len(records)}; "
           f"peak MLX memory {mx.get_peak_memory() / 2**30:.2f} GB", flush=True)
 
 
