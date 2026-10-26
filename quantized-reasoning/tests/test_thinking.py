@@ -9,6 +9,14 @@ from proofwriter_test import build_or_load_eval_set  # noqa: E402
 
 
 class ThinkingTests(unittest.TestCase):
+    def test_lenient_parser(self):
+        import analyze_thinking
+        L = analyze_thinking.lenient_prediction
+        self.assertEqual(L("<think>x</think>\n\nAnswer: Unknown"), "Unknown")
+        self.assertEqual(L("<think>x</think>**True**"), "True")
+        self.assertEqual(L("<think>never"), "TRUNCATED")
+        self.assertEqual(L("<think>x</think> no idea"), "INVALID")
+
     def test_extract_answer(self):
         self.assertEqual(thinking.extract_answer("<think>steps</think>\n\nTrue")[0], "True")
         self.assertEqual(thinking.extract_answer("steps... </think>Unknown.")[0], "Unknown")

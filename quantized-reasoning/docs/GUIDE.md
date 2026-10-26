@@ -78,6 +78,7 @@ Why thinking? See §8 — without it, the models can't do multi-step reasoning a
 | `src/analyze.py` | Round-1 analysis: accuracy, Wilson CIs, bootstrap penalty CIs |
 | `src/analyze_forced_choice.py` | Rounds 2–3 analysis: margins, KL, flip rates, depth slopes, confidence control |
 | `src/size_trend.py` | Combines per-size analyses into one cross-size summary + chart |
+| `src/analyze_thinking.py` | Round-4 analysis: accuracy and penalties by depth, depth slope, thinking length, truncations, "wrong vs didn't finish" breakdown, and a lenient-parser sensitivity check |
 | `run_*.sh` | One-command sweeps (loop over precisions/sizes, then analyze) |
 | `tests/` | Automated checks: parser, sampling, resume, statistics on known inputs |
 | `results/` | Raw per-puzzle records (not in git — large, regenerable) |
@@ -164,10 +165,24 @@ through its layers, no matter how many steps the puzzle needs. These models can 
 but not deductions — so there was no reasoning chain for quantization to damage. The depth question
 was untestable in that mode.
 
-**Round 4 — thinking mode (smoke test, 18 items each).**
-With thinking, Qwen3-4B BF16 got depths 0–3 all right (12/12) and struggled at 4–5 (2/6). 4-bit and
-even 0.6B also reason successfully. Now there is real headroom: easy at shallow depths, hard at deep
-ones — the setup the hypothesis needs. Cost: ~134 s per puzzle at BF16 (16 tokens/s), ~44 s at 4-bit.
+**Round 4 — thinking mode.**
+*Smoke test (18 items):* Qwen3-4B BF16 got depths 0–3 all right (12/12) and struggled at 4–5 (2/6).
+Cost: ~134 s per puzzle at BF16 (16 tokens/s), ~44 s at 4-bit, ~13 s for 0.6B.
+
+*Qwen3-0.6B, 180 items (30 per depth), BF16 / 8 / 4 / 3-bit* (`analysis/thinking/qwen3-0.6b/`):
+- BF16 now reasons: ~80% at depths 0–2, ~40% at 3–5 — real headroom (vs near-chance beyond depth 0 when answering directly).
+- 8-bit is still free (Δ −2.8 pts, CI −9.4 to +3.9).
+- 4-bit loses 25 pts overall (CI 17–33) — 2.5× its direct-answer loss — and more on deep puzzles:
+  ~15 pts at depths 0–1 vs ~30 at depths 2–5. Depth slope +3.3 pts/depth, CI −1.1 to +7.7:
+  suggestive, **not yet significant** (lenient parser: +4.1, CI −0.1 to +8.3).
+- **How 4-bit fails:** when it finishes, it is as accurate as BF16 on the same items (68% vs 66%).
+  It fails by *not finishing*: it thinks ~2× longer at every depth and runs past the 4,096-token
+  budget on 62/180 items, rising with depth (3 at depth 0 → 19 at depth 5); some are literal loops.
+- 3-bit collapses completely: every answer runs out of budget.
+
+*Caveats to check next:* greedy decoding is known to encourage loops (Qwen recommends sampling for
+thinking), and some truncated items might finish with a bigger budget. Both could inflate the 4-bit
+"failure to finish" — they need testing before we claim a compression effect.
 
 ---
 
@@ -183,6 +198,7 @@ ones — the setup the hypothesis needs. Cost: ~134 s per puzzle at BF16 (16 tok
 | Switch from 4B-Instruct-2507 to original Qwen3 family | 2507 exists only at 4B; original Qwen3 has 0.6B→32B with one architecture, and a thinking on/off switch in the same weights |
 | `enable_thinking=False` for direct answers | Original Qwen3 models think by default; the switch makes them answer directly |
 | Thinking budget 4,096 tokens; over-budget = TRUNCATED = wrong | Bounds runtime; truncation rate is reported so we can see if the budget is too small |
+| Report a lenient parser alongside the strict one (thinking mode) | 4-bit often ends with "Answer: Unknown", which the strict (pre-registered) parser rejects; showing both keeps the primary metric honest without hiding a scoring artifact |
 | Balanced ("interleaved") item order | Any first-N subset has equal items per depth and label, so partial runs are still fair comparisons |
 
 ---
@@ -197,3 +213,5 @@ ones — the setup the hypothesis needs. Cost: ~134 s per puzzle at BF16 (16 tok
 6. Why do we need the confidence control — what alternative explanation does it rule out?
 7. Why did one-word answers make the depth question untestable, and why does thinking fix that?
 8. Why must every precision answer the *same* items?
+9. In thinking mode, 4-bit is as accurate as BF16 on the items it finishes. Why does that change how we describe what compression breaks?
+10. Why could greedy decoding make the 4-bit result look worse than it really is?

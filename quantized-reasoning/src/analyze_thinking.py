@@ -6,12 +6,14 @@ TRUNCATED answers (budget hit before </think>) count as wrong, as in the runner.
 """
 import argparse
 import json
+import re
 from pathlib import Path
 
 import numpy as np
 
 import analyze
-from proofwriter_test import DEPTHS, ROOT
+from proofwriter_test import DEPTHS, LABELS, ROOT
+from thinking import THINK_END
 
 ORDER = ["bf16", "8bit", "6bit", "5bit", "4bit", "3bit"]
 
@@ -19,6 +21,27 @@ ORDER = ["bf16", "8bit", "6bit", "5bit", "4bit", "3bit"]
 def load(path):
     lines = [json.loads(line) for line in Path(path).read_text().splitlines() if line.strip()]
     return lines[0], {row["index"]: row for row in lines[1:]}
+
+
+def lenient_prediction(output):
+    """Secondary scoring: first standalone label word after </think> (accepts "Answer: Unknown", "**True**").
+
+    The strict parser (primary, pre-registered) requires the answer to *start* with the label.
+    """
+    if THINK_END not in output:
+        return "TRUNCATED"
+    match = re.search(r"\b(True|False|Unknown)\b", output.split(THINK_END, 1)[1])
+    return match.group(1) if match else "INVALID"
+
+
+def rescore_lenient(runs):
+    out = {}
+    for p, run in runs.items():
+        out[p] = {}
+        for i, r in run.items():
+            pred = lenient_prediction(r["output"])
+            out[p][i] = dict(r, prediction=pred, correct=pred == r["gold"])
+    return out
 
 
 def thinking_stats(runs, common):
@@ -30,6 +53,42 @@ def thinking_stats(runs, common):
                              mean_tokens=float(np.mean([r["generated_tokens"] for r in items])),
                              truncated=sum(r["prediction"] == "TRUNCATED" for r in items)))
     return rows
+
+
+def lenient_md(out, precisions):
+    acc = {(r["precision"], r["depth"]): r for r in out["accuracy"]}
+    lines = ["", "## Sensitivity: lenient answer parsing (first True/False/Unknown word after </think>)", "",
+             "| Depth | " + " | ".join(precisions) + " |", "|---|" + "---|" * len(precisions)]
+    for d in DEPTHS:
+        lines.append(f"| {d} | " + " | ".join(f"{acc[p, d]['acc'] * 100:.0f}" for p in precisions) + " |")
+    lines += ["", "| Precision | Overall Δ (pts) | Slope of Δ per depth (pts) |", "|---|---|---|"]
+    for t in out["trend"]:
+        lines.append(f"| {t['precision']} | {t['overall_delta'] * 100:+.1f} [{t['overall_ci'][0] * 100:+.1f}, {t['overall_ci'][1] * 100:+.1f}] "
+                     f"| {t['slope_per_depth'] * 100:+.2f} [{t['slope_ci'][0] * 100:+.2f}, {t['slope_ci'][1] * 100:+.2f}] |")
+    return "\n".join(lines) + "\n"
+
+
+def finish_md(runs, common, precisions):
+    """Is the loss from wrong reasoning or from failing to finish? Accuracy on items both finished."""
+    base = runs["bf16"]
+    lines = ["", "## Wrong reasoning or failure to finish?", "",
+             "Accuracy on the items where the quantized model closed </think> with a parseable answer "
+             "(strict parser), compared with BF16 on the same items.", "",
+             "| Precision | Items finished | Acc (quantized) | Acc (BF16, same items) | Truncated by depth 0→5 |",
+             "|---|---|---|---|---|"]
+    for p in precisions:
+        if p == "bf16":
+            continue
+        run = runs[p]
+        fin = [i for i in common if run[i]["prediction"] in LABELS]
+        trunc = [sum(run[i]["prediction"] == "TRUNCATED" for i in common if run[i]["depth"] == d) for d in DEPTHS]
+        if fin:
+            qa = sum(run[i]["correct"] for i in fin) / len(fin)
+            ba = sum(base[i]["correct"] for i in fin) / len(fin)
+            lines.append(f"| {p} | {len(fin)} | {qa:.0%} | {ba:.0%} | {' / '.join(map(str, trunc))} |")
+        else:
+            lines.append(f"| {p} | 0 | — | — | {' / '.join(map(str, trunc))} |")
+    return "\n".join(lines) + "\n"
 
 
 def summary_md(family, out, stats, precisions):
@@ -97,7 +156,7 @@ def plot(out, path, family, precisions):
     for side in ("left", "bottom"):
         ax.spines[side].set_color("#c3c2b7")
     ax.tick_params(colors=muted, labelsize=8)
-    ax.legend(frameon=False, fontsize=8, loc="lower left")
+    ax.legend(frameon=False, fontsize=8, loc="upper right")
     fig.tight_layout()
     fig.savefig(path, facecolor=surface)
 
@@ -125,8 +184,10 @@ def main():
     stats = thinking_stats(runs, common)
     out_dir = ROOT / "analysis" / "thinking" / args.family
     out_dir.mkdir(parents=True, exist_ok=True)
-    (out_dir / "analysis.json").write_text(json.dumps(dict(out, thinking=stats, provenance=headers), indent=2) + "\n")
-    md = summary_md(args.family, out, stats, precisions)
+    lenient = analyze.analyze(rescore_lenient(runs))
+    md = (summary_md(args.family, out, stats, precisions) + finish_md(runs, common, precisions)
+          + lenient_md(lenient, precisions))
+    (out_dir / "analysis.json").write_text(json.dumps(dict(out, thinking=stats, lenient=lenient, provenance=headers), indent=2) + "\n")
     (out_dir / "summary.md").write_text(md)
     plot(out, out_dir / "accuracy_vs_depth.png", args.family, precisions)
     print(md)
