@@ -90,6 +90,31 @@ each weight becomes a small integer (e.g. 0–15 for 4-bit). That's why "4-bit" 
 per weight. All quantized models are made from the *same* BF16 weights, so precision is the only
 thing that changes.
 
+### GPTQ — the "smart rounding" baseline
+
+**Round-to-nearest (RTN)**, what `mlx_lm convert` does, rounds each weight to the nearest allowed
+value, independently. **GPTQ** rounds the weights of a layer *one column at a time*, and after each
+rounding it nudges the not-yet-rounded weights to cancel the error just introduced, so the layer's
+*output* stays as close as possible to the original on real text (the "calibration data").
+
+The math in one line: for a layer with weights W and typical inputs X, GPTQ minimizes the output
+error ‖WX − ŴX‖² over rounded weights Ŵ. The matrix H = X Xᵀ (the "Hessian" of that error) says
+which input directions matter most; GPTQ uses H⁻¹ to decide how to spread each rounding error onto
+the remaining weights.
+
+Our settings (`src/models.py`, precision name `gptq4`): 4-bit, group size 64 — identical format to
+RTN `4bit`, so model size and speed are identical and **only the rounding method differs**. The one
+layer GPTQ doesn't optimize (Qwen3's shared embedding/output layer) uses 4-bit RTN, matching `4bit`.
+Calibration: mlx-lm's standard ~437 KB mixed-text file, all 512-token chunks, seed 123.
+
+**Memory catch:** mlx-lm's GPTQ keeps one H per layer for the *whole model at once*: ~2.0 GB for
+0.6B, ~6.6 GB for 1.7B, **~19.3 GB for 4B** (doesn't fit in 18 GB). `ensure_quantized` refuses to
+start above an 8 GB budget. The 4B needs a block-by-block GPTQ (one transformer block's Hessians at a
+time, ~0.5 GB) — planned.
+
+**Why it matters:** if 4-bit damage mostly disappears under GPTQ, the finding is about naive rounding,
+not about 4-bit itself. Reviewers and interviewers will ask.
+
 ---
 
 ## 6. Metrics — intuition first
@@ -215,3 +240,5 @@ thinking), and some truncated items might finish with a bigger budget. Both coul
 8. Why must every precision answer the *same* items?
 9. In thinking mode, 4-bit is as accurate as BF16 on the items it finishes. Why does that change how we describe what compression breaks?
 10. Why could greedy decoding make the 4-bit result look worse than it really is?
+11. What does GPTQ do that round-to-nearest doesn't, and why does it need calibration data?
+12. Why does mlx-lm's GPTQ need ~19 GB for the 4B model — what is being stored?

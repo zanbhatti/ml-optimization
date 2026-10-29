@@ -15,7 +15,7 @@ import analyze
 from proofwriter_test import DEPTHS, LABELS, ROOT
 from thinking import THINK_END
 
-ORDER = ["bf16", "8bit", "6bit", "5bit", "4bit", "3bit"]
+ORDER = ["bf16", "8bit", "6bit", "5bit", "4bit", "3bit", "gptq4"]
 
 
 def load(path):
@@ -130,7 +130,7 @@ def plot(out, path, family, precisions):
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     ink, muted, grid, surface = "#0b0b0b", "#52514e", "#e6e5e0", "#fcfcfb"
-    palette = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100"]
+    palette = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#6250d6"]
     fig, ax = plt.subplots(figsize=(7, 4.2), dpi=200)
     fig.patch.set_facecolor(surface)
     ax.set_facecolor(surface)

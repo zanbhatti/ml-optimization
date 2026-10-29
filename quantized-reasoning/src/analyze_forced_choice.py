@@ -19,8 +19,9 @@ from analyze import CHANCE, ci, wilson
 from models import DEFAULT_FAMILY, FAMILIES
 from proofwriter_test import DEPTHS, LABELS, ROOT
 
-ORDER = ["bf16", "8bit", "6bit", "5bit", "4bit", "3bit"]
-BITS = {"8bit": 8, "6bit": 6, "5bit": 5, "4bit": 4, "3bit": 3}
+ORDER = ["bf16", "8bit", "6bit", "5bit", "4bit", "3bit", "gptq4"]
+BITS = {"8bit": 8, "6bit": 6, "5bit": 5, "4bit": 4, "3bit": 3, "gptq4": 4}
+RTN = ["8bit", "6bit", "5bit", "4bit", "3bit"]  # the bit-width curve; GPTQ is reported in tables
 BOOT = 10_000
 SEED = 0
 GROUPS = {"depth 0–1": (0, 1), "depth 2–3": (2, 3), "depth 4–5": (4, 5)}
@@ -203,7 +204,7 @@ def plot(rows, trends, path, name):
     colors = ["#2a78d6", "#eb6834", "#1baf7a"]
     fig, (a1, a2) = plt.subplots(1, 2, figsize=(10, 4.2), dpi=200)
     fig.patch.set_facecolor(surface)
-    quant = [p for p in ORDER if p != "bf16" and any(r["precision"] == p for r in rows)]
+    quant = [p for p in RTN if any(r["precision"] == p for r in rows)]
     bits = [BITS[p] for p in quant]
     get = {(r["precision"], r["depth"]): r for r in rows if r["subset"] == "all items"}
     for color, (name, ds) in zip(colors, GROUPS.items()):
