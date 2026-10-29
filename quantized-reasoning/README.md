@@ -34,104 +34,103 @@ Generation uses the tokenizer's chat template, greedy argmax, EOS stopping, and 
 
 ## Models
 
-Current: Qwen3 4B Instruct BF16 (`mlx-community/Qwen3-4B-Instruct-2507-bf16`).
+Qwen3 family, MLX on Apple Silicon. BF16 checkpoints from `mlx-community`; every lower precision is
+built locally from the same BF16 weights (`mlx_lm convert`, affine quantization, group size 64), so
+precision is the only difference.
 
-Planned: matching Qwen3 4B Instruct BF16, 8-bit, and 4-bit MLX checkpoints. The full precision-comparison runner is not implemented.
+| Family | Sizes | Used for |
+|---|---|---|
+| Qwen3-4B-Instruct-2507 | 4B | Rounds 1–2 (direct answers) |
+| Qwen3 (hybrid thinking) | 0.6B, 1.7B, 4B | Rounds 3–4 (direct answers with `enable_thinking=False`; step-by-step with thinking on) |
+
+Precisions: BF16 and 8 / 6 / 5 / 4 / 3-bit round-to-nearest (RTN). A GPTQ 4-bit baseline is in progress.
 
 ## Benchmarks
 
-**Current — ProofWriter:** rule-based logical deduction with ground-truth reasoning-depth metadata (`QDep`), using `tasksource/proofwriter`, validation split.
+**ProofWriter:** rule-based logical deduction with ground-truth reasoning-depth metadata (`QDep`), using
+`tasksource/proofwriter`, validation split. **Planned — CLUTRR** (relational reasoning) as a second task.
 
-**Planned — CLUTRR:** relational reasoning, where chain length provides another notion of depth. Depths across task families will be analyzed separately rather than assumed equivalent.
+## Evaluation modes and metrics
 
-## Metrics
+| Mode | How the answer is obtained | Runner |
+|---|---|---|
+| Generation | Up to 5 greedy tokens; strict parser (answer must start with the label) | `src/run_precision.py` |
+| Forced choice | One forward pass; argmax over the log-probs of the True/False/Unknown tokens | `src/forced_choice.py` |
+| Thinking | Greedy step-by-step reasoning (KV cache, 4,096-token budget), answer read after `</think>` | `src/thinking.py` |
 
-A(b, d, t) is correct predictions divided by all evaluated examples for precision b, depth d, and task family t. The primary metric is accuracy by reasoning depth; the primary comparison is Δ(b, d, t), defined above.
+Metrics: accuracy A(b, d) with Wilson 95% CIs; penalty Δ(b, d) = A(BF16, d) − A(b, d) with paired
+bootstrap CIs (10,000 resamples within depth); slope of Δ on depth (the hypothesis test); per-item
+margin, KL divergence and flip rate vs BF16 (forced choice); thinking length and truncations. See
+[`docs/GUIDE.md`](docs/GUIDE.md) for intuition and definitions.
 
-The evaluator reports correct/total, invalid prediction counts, per-depth accuracy, and overall accuracy. A prediction must begin, after whitespace, with the case-sensitive label True, False, or Unknown, followed by a supported punctuation delimiter, whitespace, or end of output. The first label is used. Other outputs are INVALID and count as incorrect. Per-example gold and predicted labels are retained for future per-label accuracy and confusion analysis.
+## Results so far
 
-Uncertainty estimates and statistical analysis of depth-dependent quantization penalties are planned, not implemented.
+**1. Answering directly, models up to 4B can't do multi-step deduction — even at full precision.**
+At every size, BF16 is ~80–90% at depth 0 (a lookup) but near chance (37–48%; chance = 33%) at
+depths 1–5. So direct-answer evaluation cannot measure how quantization affects multi-step reasoning.
 
-## Current Status
+**2. Direct answers: 8-bit is free; 4-bit costs ~10 points.** Qwen3-4B-Instruct-2507: BF16 53.1%,
+8-bit 53.9%, 4-bit 43.0% (Δ 10.2 pts, 95% CI 6.7–13.9); depth trend not significant. Answers changed
+vs BF16 rise steadily as bits drop (8/6/5/4/3-bit: 2% / 4% / 12% / 22% / 49%), and the answers that
+flip are the ones BF16 was unsure about — depth adds nothing once that confidence is held fixed.
 
-Work in progress.
+**3. With step-by-step thinking, models reason — and 4-bit hurts more, especially on deep puzzles.**
+Qwen3-0.6B, 180 puzzles (30 per depth):
 
-Completed:
+| Depth | 0 | 1 | 2 | 3 | 4 | 5 |
+|---|---|---|---|---|---|---|
+| BF16 | 77 | 80 | 80 | 40 | 37 | 40 |
+| 8-bit | 87 | 80 | 80 | 43 | 37 | 43 |
+| 4-bit | 63 | 63 | 43 | 17 | 10 | 7 |
+| 3-bit | 0 | 0 | 0 | 0 | 0 | 0 |
 
-- Custom MLX autoregressive inference with tokenizer-provided EOS handling.
-- ProofWriter loading and open-world True/False/Unknown evaluation.
-- Depth-based evaluation and label stratification.
-- Initial BF16 pilot experiments (15 examples per depth); these are not final findings.
-- Identification and control of early experimental confounds through shared evaluation conditions.
-- Reproducible sampling and persisted evaluation-set support, with validation and lightweight tests.
-- Fixed 540-example ProofWriter evaluation artifact created, validated, and locked for version control (`data/proofwriter_eval.jsonl`).
+- 4-bit loses 25 pts overall (95% CI 17–33), about 15 pts at depths 0–1 vs 30 at depths 2–5.
+  Depth slope +3.3 pts/depth (95% CI −1.1 to +7.7): suggestive, not yet significant.
+- **4-bit fails by not finishing, not by reasoning wrongly:** on the puzzles it finishes it matches
+  BF16 (68% vs 66%), but it thinks ~2× longer and runs out of budget on 62/180 puzzles, rising with
+  depth (3 at depth 0 → 19 at depth 5). 3-bit never finishes.
+- **Open check:** greedy decoding encourages repetition loops; sampling and a larger budget are being
+  tested before this is claimed as a quantization effect.
 
-In progress:
-
-- Establishing a larger BF16 baseline; the 540-example model evaluation has not been run.
-- Quantized model evaluation.
+Full tables and charts: `analysis/` (per round and model).
 
 ## Roadmap
 
-1. **Completed:** Lock the reproducible 540-example ProofWriter evaluation set.
-2. Establish the larger BF16 baseline.
-3. Evaluate matching 8-bit and 4-bit models.
-4. Compute quantization penalties by depth.
-5. Add uncertainty estimates and statistical analysis.
-6. Investigate input-length and class-specific effects.
-7. Add CLUTRR.
-8. Optionally collect systems metrics, including memory usage and inference latency.
-9. Analyze and document results.
+Phase 1 runs through December 2026 — see [`docs/PHASE1_PLAN.md`](docs/PHASE1_PLAN.md): GPTQ baseline,
+speed/memory benchmark, greedy-decoding check, 1.7B and 4B thinking runs, public write-up.
 
 ## Repository Structure
 
 ```text
 quantized-reasoning/
-├── .gitignore
-├── README.md
-├── requirements.txt
-├── data/
-│   └── proofwriter_eval.jsonl # Locked 540-example evaluation set
+├── data/proofwriter_eval.jsonl   # Locked 540-item evaluation set (SHA-256 recorded in every result)
 ├── src/
-│   ├── inference.py          # Model loading configuration and autoregressive inference
-│   └── proofwriter_test.py   # Sampling, persistence, prompts, evaluation, and CLI
-└── tests/
-    └── test_proofwriter.py   # CPU-only sampling, normalization, and scoring tests
+│   ├── proofwriter_test.py       # Eval set, prompt, strict answer parser
+│   ├── models.py                 # Model families, precision paths, on-demand quantization
+│   ├── run_precision.py          # Generation runner + shared resume/ordering helpers
+│   ├── forced_choice.py          # Forced-choice runner
+│   ├── thinking.py               # Thinking-mode runner
+│   ├── analyze*.py, size_trend.py
+│   └── inference.py              # Original hand-written generation loop
+├── run_*.sh                      # One-command sweeps (resumable)
+├── analysis/                     # Summaries, CSVs, charts (tracked)
+├── results/                      # Raw per-item records (ignored; regenerable)
+├── docs/GUIDE.md, docs/PHASE1_PLAN.md
+└── tests/                        # Parser, sampling, resume and statistics tests
 ```
-
-Generated artifacts: `data/proofwriter_eval.jsonl` (created by preparation; intended for version control) and `results/proofwriter_bf16.json` (created by evaluation; ignored by Git).
 
 ## Running
 
-From the repository root, on Apple Silicon:
-
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
+python3 -m venv .venv && source .venv/bin/activate
 python -m pip install -r requirements.txt
+python3 -m unittest discover -s tests        # no model or download needed
+./run_family_sweep.sh                        # forced choice: Qwen3 0.6B/1.7B/4B × 6 precisions
+./run_thinking.sh qwen3-0.6b 180 bf16 8bit 4bit 3bit   # thinking mode, first 180 balanced items
 ```
 
-Prepare or validate the evaluation set without loading a model:
-
-```bash
-python src/proofwriter_test.py --prepare-only
-```
-
-Run the BF16 evaluation:
-
-```bash
-python src/proofwriter_test.py
-```
-
-The first run needs access to Hugging Face to download uncached dataset/model files. Preparation requires only `datasets`; inference also requires MLX-LM. Paths for generated artifacts are resolved relative to the repository, independently of the working directory. Keep the evaluation JSONL intact for subsequent runs.
-
-Progress is printed every 15 examples, followed by per-depth and overall summaries. Use `--debug` for individual predictions, or `--output results/my_run.json` to choose a report path. The default report is overwritten on reruns; use distinct paths to retain separate runs.
-
-Run the lightweight tests without MLX or dataset downloads:
-
-```bash
-python3 -m unittest discover -s tests
-```
+All runs are resumable: rerun the same command after a stop and finished items are skipped. MLX's
+buffer cache is capped (0.5 GB) and peak memory is printed at the end of each run.
 
 ## Hardware
 
@@ -145,4 +144,5 @@ Development and evaluation currently use a local Apple M3 Pro with 18 GB unified
 - Quantization implementation and configuration matter, including checkpoint matching and tokenizer compatibility.
 - Balanced sampling estimates performance under a balanced class distribution, not the natural dataset distribution.
 - Examples can share theories; future uncertainty analysis should account for dependence.
-- Pilot results are not final experimental findings and do not establish a quantization effect.
+- Thinking-mode results use greedy decoding and a 4,096-token budget; both can inflate truncation.
+- 0.6B thinking results use 30 items per depth; per-depth CIs are wide (about ±15 pts).
