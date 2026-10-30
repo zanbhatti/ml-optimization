@@ -79,7 +79,10 @@ Why thinking? See §8 — without it, the models can't do multi-step reasoning a
 | `src/analyze_forced_choice.py` | Rounds 2–3 analysis: margins, KL, flip rates, depth slopes, confidence control |
 | `src/size_trend.py` | Combines per-size analyses into one cross-size summary + chart |
 | `src/analyze_thinking.py` | Round-4 analysis: accuracy and penalties by depth, depth slope, thinking length, truncations, "wrong vs didn't finish" breakdown, and a lenient-parser sensitivity check |
-| `run_*.sh` | One-command sweeps (loop over precisions/sizes, then analyze) |
+| `src/benchmark.py` | Week 2: speed and memory per model and precision (prefill and decode tokens/s, peak memory), one subprocess per model |
+| `src/analyze_benchmark.py` | Week 2: benchmark table + chart, and the bandwidth-ceiling comparison |
+| `src/analyze_decoding.py` | Week 2: the greedy-decoding check (does the 4-bit penalty survive sampling and an 8k budget?) |
+| `run_*.sh` | One-command sweeps (loop over precisions/sizes, then analyze). `run_week2.sh` = benchmark + decoding check |
 | `tests/` | Automated checks: parser, sampling, resume, statistics on known inputs |
 | `results/` | Raw per-puzzle records (not in git — large, regenerable) |
 | `analysis/` | Summaries, CSVs, charts (in git) |
@@ -114,6 +117,63 @@ time, ~0.5 GB) — planned.
 
 **Why it matters:** if 4-bit damage mostly disappears under GPTQ, the finding is about naive rounding,
 not about 4-bit itself. Reviewers and interviewers will ask.
+
+### Speed and memory — why anyone quantizes (week 2)
+
+Accuracy loss is only half the trade. The other half is what you get for it: a smaller model that
+fits in less memory and generates faster. `src/benchmark.py` measures that.
+
+**Two phases of running a model:**
+- **Prefill** = reading the prompt. All L prompt tokens go through the model *together*, so each
+  weight, once fetched from memory, is used L times.
+- **Decode** = generating the answer, *one token at a time*. Each new token needs every weight fetched
+  again, and uses each one for just ~2 arithmetic operations (a multiply and an add).
+
+**The key idea, arithmetic intensity** = arithmetic operations per byte fetched from memory. The
+GPU can do far more arithmetic per second than it can fetch bytes (M3 Pro: ~150 GB/s of memory
+bandwidth). Decode does ~2 operations per weight, so the GPU sits idle waiting for weights:
+**decode is memory-bandwidth-bound.** Prefill reuses each weight L times, so it's **compute-bound**.
+
+**What follows (the testable prediction):**
+- Decode speed ≤ bandwidth ÷ bytes per token ≈ 150 GB/s ÷ model size. A 4-bit model is ~3.5×
+  smaller than BF16, so it should decode up to ~3.5× faster.
+- Prefill should barely change with precision; quantized weights must be unpacked before use, so it
+  can even be slightly slower.
+
+**Smoke-test numbers (1 repeat, 512-token context; full sweep running):** Qwen3-4B decodes at 14
+tok/s in BF16 (8.0 GB, ceiling 19, so 76% of it) vs 45 tok/s at 4-bit (2.3 GB): 3.2× faster. Prefill
+is about the same (440 vs 457 tok/s). The 0.6B gains only 2×: at 0.3 GB the weights are so small
+that fixed per-token overheads (launching GPU work, reading the KV cache) dominate, not weight
+reading.
+
+**How it's measured:** each model is loaded in its own process (so peak memory is that model's
+alone) and gets a warm-up run. Contexts are 512 and 4,096 tokens of real ProofWriter text. 128
+tokens are decoded with the end-of-text token blocked, so every run does the same work. Each
+measurement is repeated 3× and the median kept. **Caveat:** laptops slow down when hot (thermal
+throttling), so absolute numbers are approximate; ratios between precisions are more reliable.
+
+### The greedy-decoding check (week 2)
+
+**Worry:** 4-bit's thinking-mode loss is mostly "never finished" — it hits the 4,096-token budget.
+Two boring explanations could produce that without compression truly breaking reasoning:
+1. **Greedy decoding loops.** Always taking the single most likely token can lock a model into
+   repeating itself. Qwen recommends *sampling* for thinking (temperature 0.6, top-p 0.95, top-k 20:
+   pick randomly among the plausible next tokens). Maybe 4-bit only loops under greedy.
+2. **The budget is just too small.** Maybe 4-bit is wordier but would finish with more room.
+
+**Test (`run_week2.sh`, 0.6B):**
+1. Rerun BF16 and 4-bit with Qwen's sampling settings, 2 random seeds each, all 180 items. Each item
+   is seeded by (seed, item), so a resumed run reproduces the same outputs.
+2. Rerun only the items that hit 4,096 tokens, now with 8,192, greedy. Greedy is deterministic, so
+   every item that already finished would come out identical; no need to redo them.
+
+**Reading it:** if Δ (BF16 − 4-bit) and its growth with depth survive both, the effect is
+compression, not a decoding artifact. If the gap closes, the honest claim becomes "4-bit makes the
+model loop under greedy decoding." That's still a finding, but a different one.
+
+*Early signal from the smoke test:* of 8 truncated 4-bit items given 8,192 tokens, 7 still ran out.
+Some were literally repeating one sentence ("But that would mean they are both furry and green…").
+More room doesn't seem to rescue a looping model. The full run will tell.
 
 ---
 
@@ -228,6 +288,9 @@ thinking), and some truncated items might finish with a bigger budget. Both coul
 | `enable_thinking=False` for direct answers | Original Qwen3 models think by default; the switch makes them answer directly |
 | Thinking budget 4,096 tokens; over-budget = TRUNCATED = wrong | Bounds runtime; truncation rate is reported so we can see if the budget is too small |
 | Report a lenient parser alongside the strict one (thinking mode) | 4-bit often ends with "Answer: Unknown", which the strict (pre-registered) parser rejects; showing both keeps the primary metric honest without hiding a scoring artifact |
+| Benchmark: one subprocess per model, EOS blocked, median of 3 | Clean per-model peak memory; every run does identical work; medians resist one-off hiccups |
+| Decoding check: Qwen's own sampling settings, 2 seeds | The "fairest" non-greedy setup is the one the model's makers recommend; 2 seeds shows how much randomness moves the result |
+| 8k budget: rerun only truncated items | Greedy is deterministic, so finished items can't change; halves the compute |
 | Balanced ("interleaved") item order | Any first-N subset has equal items per depth and label, so partial runs are still fair comparisons |
 
 ---
@@ -246,3 +309,7 @@ thinking), and some truncated items might finish with a bigger budget. Both coul
 10. Why could greedy decoding make the 4-bit result look worse than it really is?
 11. What does GPTQ do that round-to-nearest doesn't, and why does it need calibration data?
 12. Why does mlx-lm's GPTQ need ~19 GB for the 4B model — what is being stored?
+13. Why is decoding limited by memory bandwidth but prefill limited by compute? (Hint: how many
+    times is each weight used per fetch?)
+14. 4-bit is 3.5× smaller than BF16. Why does the 4B decode ~3.2× faster but the 0.6B only ~2×?
+15. What result from the decoding check would make you drop the claim "4-bit hurts deep reasoning"?
