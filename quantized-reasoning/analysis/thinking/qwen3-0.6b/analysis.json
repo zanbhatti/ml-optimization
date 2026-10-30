@@ -245,6 +245,66 @@
       "lo": 0.0,
       "hi": 0.11351339476145204,
       "invalid": 0
+    },
+    {
+      "precision": "gptq4",
+      "depth": 0,
+      "correct": 25,
+      "n": 30,
+      "acc": 0.8333333333333334,
+      "lo": 0.6643564934133498,
+      "hi": 0.9266345767456822,
+      "invalid": 0
+    },
+    {
+      "precision": "gptq4",
+      "depth": 1,
+      "correct": 21,
+      "n": 30,
+      "acc": 0.7,
+      "lo": 0.5212421239810444,
+      "hi": 0.8333525181143747,
+      "invalid": 0
+    },
+    {
+      "precision": "gptq4",
+      "depth": 2,
+      "correct": 17,
+      "n": 30,
+      "acc": 0.5666666666666667,
+      "lo": 0.39197306873128,
+      "hi": 0.7262251453005263,
+      "invalid": 0
+    },
+    {
+      "precision": "gptq4",
+      "depth": 3,
+      "correct": 8,
+      "n": 30,
+      "acc": 0.26666666666666666,
+      "lo": 0.14182663247581012,
+      "hi": 0.4444796184128676,
+      "invalid": 0
+    },
+    {
+      "precision": "gptq4",
+      "depth": 4,
+      "correct": 6,
+      "n": 30,
+      "acc": 0.2,
+      "lo": 0.09505107121882947,
+      "hi": 0.3730569656380418,
+      "invalid": 0
+    },
+    {
+      "precision": "gptq4",
+      "depth": 5,
+      "correct": 6,
+      "n": 30,
+      "acc": 0.2,
+      "lo": 0.09505107121882947,
+      "hi": 0.3730569656380418,
+      "invalid": 0
     }
   ],
   "penalty": [
@@ -409,6 +469,60 @@
       "hi": 0.5666666666666667,
       "lost": 12,
       "gained": 0
+    },
+    {
+      "precision": "gptq4",
+      "depth": 0,
+      "delta": -0.06666666666666665,
+      "lo": -0.20000000000000007,
+      "hi": 0.06666666666666665,
+      "lost": 1,
+      "gained": 3
+    },
+    {
+      "precision": "gptq4",
+      "depth": 1,
+      "delta": 0.10000000000000009,
+      "lo": -0.09999999999999998,
+      "hi": 0.30000000000000004,
+      "lost": 6,
+      "gained": 3
+    },
+    {
+      "precision": "gptq4",
+      "depth": 2,
+      "delta": 0.2333333333333334,
+      "lo": 0.033333333333333326,
+      "hi": 0.43333333333333335,
+      "lost": 9,
+      "gained": 2
+    },
+    {
+      "precision": "gptq4",
+      "depth": 3,
+      "delta": 0.13333333333333336,
+      "lo": 0.0,
+      "hi": 0.3,
+      "lost": 5,
+      "gained": 1
+    },
+    {
+      "precision": "gptq4",
+      "depth": 4,
+      "delta": 0.16666666666666663,
+      "lo": 0.0,
+      "hi": 0.33333333333333337,
+      "lost": 6,
+      "gained": 1
+    },
+    {
+      "precision": "gptq4",
+      "depth": 5,
+      "delta": 0.2,
+      "lo": -0.033333333333333326,
+      "hi": 0.4,
+      "lost": 9,
+      "gained": 3
     }
   ],
   "trend": [
@@ -464,6 +578,24 @@
       "gap_ci": [
         -0.6000000000000001,
         -0.1333333333333333
+      ]
+    },
+    {
+      "precision": "gptq4",
+      "overall_delta": 0.12777777777777777,
+      "overall_ci": [
+        0.05555555555555555,
+        0.20000000000000004
+      ],
+      "slope_per_depth": 0.04095238095238094,
+      "slope_ci": [
+        -0.0019047619047619139,
+        0.08285714285714287
+      ],
+      "delta_d5_minus_d0": 0.26666666666666666,
+      "gap_ci": [
+        1.1102230246251565e-16,
+        0.5000000000000001
       ]
     }
   ],
@@ -1043,6 +1175,150 @@
       "correct": 0,
       "n": 10,
       "acc": 0.0
+    },
+    {
+      "precision": "gptq4",
+      "depth": 0,
+      "gold": "True",
+      "correct": 10,
+      "n": 10,
+      "acc": 1.0
+    },
+    {
+      "precision": "gptq4",
+      "depth": 0,
+      "gold": "False",
+      "correct": 9,
+      "n": 10,
+      "acc": 0.9
+    },
+    {
+      "precision": "gptq4",
+      "depth": 0,
+      "gold": "Unknown",
+      "correct": 6,
+      "n": 10,
+      "acc": 0.6
+    },
+    {
+      "precision": "gptq4",
+      "depth": 1,
+      "gold": "True",
+      "correct": 6,
+      "n": 10,
+      "acc": 0.6
+    },
+    {
+      "precision": "gptq4",
+      "depth": 1,
+      "gold": "False",
+      "correct": 10,
+      "n": 10,
+      "acc": 1.0
+    },
+    {
+      "precision": "gptq4",
+      "depth": 1,
+      "gold": "Unknown",
+      "correct": 5,
+      "n": 10,
+      "acc": 0.5
+    },
+    {
+      "precision": "gptq4",
+      "depth": 2,
+      "gold": "True",
+      "correct": 6,
+      "n": 10,
+      "acc": 0.6
+    },
+    {
+      "precision": "gptq4",
+      "depth": 2,
+      "gold": "False",
+      "correct": 6,
+      "n": 10,
+      "acc": 0.6
+    },
+    {
+      "precision": "gptq4",
+      "depth": 2,
+      "gold": "Unknown",
+      "correct": 5,
+      "n": 10,
+      "acc": 0.5
+    },
+    {
+      "precision": "gptq4",
+      "depth": 3,
+      "gold": "True",
+      "correct": 2,
+      "n": 10,
+      "acc": 0.2
+    },
+    {
+      "precision": "gptq4",
+      "depth": 3,
+      "gold": "False",
+      "correct": 4,
+      "n": 10,
+      "acc": 0.4
+    },
+    {
+      "precision": "gptq4",
+      "depth": 3,
+      "gold": "Unknown",
+      "correct": 2,
+      "n": 10,
+      "acc": 0.2
+    },
+    {
+      "precision": "gptq4",
+      "depth": 4,
+      "gold": "True",
+      "correct": 2,
+      "n": 10,
+      "acc": 0.2
+    },
+    {
+      "precision": "gptq4",
+      "depth": 4,
+      "gold": "False",
+      "correct": 2,
+      "n": 10,
+      "acc": 0.2
+    },
+    {
+      "precision": "gptq4",
+      "depth": 4,
+      "gold": "Unknown",
+      "correct": 2,
+      "n": 10,
+      "acc": 0.2
+    },
+    {
+      "precision": "gptq4",
+      "depth": 5,
+      "gold": "True",
+      "correct": 0,
+      "n": 10,
+      "acc": 0.0
+    },
+    {
+      "precision": "gptq4",
+      "depth": 5,
+      "gold": "False",
+      "correct": 1,
+      "n": 10,
+      "acc": 0.1
+    },
+    {
+      "precision": "gptq4",
+      "depth": 5,
+      "gold": "Unknown",
+      "correct": 5,
+      "n": 10,
+      "acc": 0.5
     }
   ],
   "pred_share": [
@@ -1237,6 +1513,54 @@
       "False": 0.0,
       "Unknown": 0.0,
       "INVALID": 0.0
+    },
+    {
+      "precision": "gptq4",
+      "depth": 0,
+      "True": 0.36666666666666664,
+      "False": 0.3333333333333333,
+      "Unknown": 0.2,
+      "INVALID": 0.0
+    },
+    {
+      "precision": "gptq4",
+      "depth": 1,
+      "True": 0.23333333333333334,
+      "False": 0.36666666666666664,
+      "Unknown": 0.23333333333333334,
+      "INVALID": 0.0
+    },
+    {
+      "precision": "gptq4",
+      "depth": 2,
+      "True": 0.23333333333333334,
+      "False": 0.3,
+      "Unknown": 0.23333333333333334,
+      "INVALID": 0.0
+    },
+    {
+      "precision": "gptq4",
+      "depth": 3,
+      "True": 0.1,
+      "False": 0.23333333333333334,
+      "Unknown": 0.3333333333333333,
+      "INVALID": 0.0
+    },
+    {
+      "precision": "gptq4",
+      "depth": 4,
+      "True": 0.2,
+      "False": 0.26666666666666666,
+      "Unknown": 0.26666666666666666,
+      "INVALID": 0.0
+    },
+    {
+      "precision": "gptq4",
+      "depth": 5,
+      "True": 0.2,
+      "False": 0.06666666666666667,
+      "Unknown": 0.5333333333333333,
+      "INVALID": 0.0
     }
   ],
   "flags": [
@@ -1255,7 +1579,10 @@
     "floor: 3bit depth 2 95% CI [0.00, 0.11] includes chance (0.33)",
     "floor: 3bit depth 3 95% CI [0.00, 0.11] includes chance (0.33)",
     "floor: 3bit depth 4 95% CI [0.00, 0.11] includes chance (0.33)",
-    "floor: 3bit depth 5 95% CI [0.00, 0.11] includes chance (0.33)"
+    "floor: 3bit depth 5 95% CI [0.00, 0.11] includes chance (0.33)",
+    "floor: gptq4 depth 3 95% CI [0.14, 0.44] includes chance (0.33)",
+    "floor: gptq4 depth 4 95% CI [0.10, 0.37] includes chance (0.33)",
+    "floor: gptq4 depth 5 95% CI [0.10, 0.37] includes chance (0.33)"
   ],
   "thinking": [
     {
@@ -1425,6 +1752,48 @@
       "n": 30,
       "mean_tokens": 4096.0,
       "truncated": 30
+    },
+    {
+      "precision": "gptq4",
+      "depth": 0,
+      "n": 30,
+      "mean_tokens": 964.9,
+      "truncated": 3
+    },
+    {
+      "precision": "gptq4",
+      "depth": 1,
+      "n": 30,
+      "mean_tokens": 1345.7,
+      "truncated": 5
+    },
+    {
+      "precision": "gptq4",
+      "depth": 2,
+      "n": 30,
+      "mean_tokens": 1721.9333333333334,
+      "truncated": 7
+    },
+    {
+      "precision": "gptq4",
+      "depth": 3,
+      "n": 30,
+      "mean_tokens": 2196.8,
+      "truncated": 10
+    },
+    {
+      "precision": "gptq4",
+      "depth": 4,
+      "n": 30,
+      "mean_tokens": 2144.5333333333333,
+      "truncated": 8
+    },
+    {
+      "precision": "gptq4",
+      "depth": 5,
+      "n": 30,
+      "mean_tokens": 2005.9,
+      "truncated": 6
     }
   ],
   "lenient": {
@@ -1674,6 +2043,66 @@
         "lo": 0.0,
         "hi": 0.11351339476145204,
         "invalid": 0
+      },
+      {
+        "precision": "gptq4",
+        "depth": 0,
+        "correct": 25,
+        "n": 30,
+        "acc": 0.8333333333333334,
+        "lo": 0.6643564934133498,
+        "hi": 0.9266345767456822,
+        "invalid": 0
+      },
+      {
+        "precision": "gptq4",
+        "depth": 1,
+        "correct": 21,
+        "n": 30,
+        "acc": 0.7,
+        "lo": 0.5212421239810444,
+        "hi": 0.8333525181143747,
+        "invalid": 0
+      },
+      {
+        "precision": "gptq4",
+        "depth": 2,
+        "correct": 17,
+        "n": 30,
+        "acc": 0.5666666666666667,
+        "lo": 0.39197306873128,
+        "hi": 0.7262251453005263,
+        "invalid": 0
+      },
+      {
+        "precision": "gptq4",
+        "depth": 3,
+        "correct": 8,
+        "n": 30,
+        "acc": 0.26666666666666666,
+        "lo": 0.14182663247581012,
+        "hi": 0.4444796184128676,
+        "invalid": 0
+      },
+      {
+        "precision": "gptq4",
+        "depth": 4,
+        "correct": 6,
+        "n": 30,
+        "acc": 0.2,
+        "lo": 0.09505107121882947,
+        "hi": 0.3730569656380418,
+        "invalid": 0
+      },
+      {
+        "precision": "gptq4",
+        "depth": 5,
+        "correct": 6,
+        "n": 30,
+        "acc": 0.2,
+        "lo": 0.09505107121882947,
+        "hi": 0.3730569656380418,
+        "invalid": 0
       }
     ],
     "penalty": [
@@ -1838,6 +2267,60 @@
         "hi": 0.5666666666666667,
         "lost": 12,
         "gained": 0
+      },
+      {
+        "precision": "gptq4",
+        "depth": 0,
+        "delta": -0.06666666666666665,
+        "lo": -0.20000000000000007,
+        "hi": 0.06666666666666665,
+        "lost": 1,
+        "gained": 3
+      },
+      {
+        "precision": "gptq4",
+        "depth": 1,
+        "delta": 0.10000000000000009,
+        "lo": -0.09999999999999998,
+        "hi": 0.30000000000000004,
+        "lost": 6,
+        "gained": 3
+      },
+      {
+        "precision": "gptq4",
+        "depth": 2,
+        "delta": 0.2333333333333334,
+        "lo": 0.033333333333333326,
+        "hi": 0.43333333333333335,
+        "lost": 9,
+        "gained": 2
+      },
+      {
+        "precision": "gptq4",
+        "depth": 3,
+        "delta": 0.13333333333333336,
+        "lo": 0.0,
+        "hi": 0.3,
+        "lost": 5,
+        "gained": 1
+      },
+      {
+        "precision": "gptq4",
+        "depth": 4,
+        "delta": 0.16666666666666663,
+        "lo": 0.0,
+        "hi": 0.33333333333333337,
+        "lost": 6,
+        "gained": 1
+      },
+      {
+        "precision": "gptq4",
+        "depth": 5,
+        "delta": 0.2,
+        "lo": -0.033333333333333326,
+        "hi": 0.4,
+        "lost": 9,
+        "gained": 3
       }
     ],
     "trend": [
@@ -1893,6 +2376,24 @@
         "gap_ci": [
           -0.6000000000000001,
           -0.1333333333333333
+        ]
+      },
+      {
+        "precision": "gptq4",
+        "overall_delta": 0.12777777777777777,
+        "overall_ci": [
+          0.05555555555555555,
+          0.20000000000000004
+        ],
+        "slope_per_depth": 0.04095238095238094,
+        "slope_ci": [
+          -0.0019047619047619139,
+          0.08285714285714287
+        ],
+        "delta_d5_minus_d0": 0.26666666666666666,
+        "gap_ci": [
+          1.1102230246251565e-16,
+          0.5000000000000001
         ]
       }
     ],
@@ -2472,6 +2973,150 @@
         "correct": 0,
         "n": 10,
         "acc": 0.0
+      },
+      {
+        "precision": "gptq4",
+        "depth": 0,
+        "gold": "True",
+        "correct": 10,
+        "n": 10,
+        "acc": 1.0
+      },
+      {
+        "precision": "gptq4",
+        "depth": 0,
+        "gold": "False",
+        "correct": 9,
+        "n": 10,
+        "acc": 0.9
+      },
+      {
+        "precision": "gptq4",
+        "depth": 0,
+        "gold": "Unknown",
+        "correct": 6,
+        "n": 10,
+        "acc": 0.6
+      },
+      {
+        "precision": "gptq4",
+        "depth": 1,
+        "gold": "True",
+        "correct": 6,
+        "n": 10,
+        "acc": 0.6
+      },
+      {
+        "precision": "gptq4",
+        "depth": 1,
+        "gold": "False",
+        "correct": 10,
+        "n": 10,
+        "acc": 1.0
+      },
+      {
+        "precision": "gptq4",
+        "depth": 1,
+        "gold": "Unknown",
+        "correct": 5,
+        "n": 10,
+        "acc": 0.5
+      },
+      {
+        "precision": "gptq4",
+        "depth": 2,
+        "gold": "True",
+        "correct": 6,
+        "n": 10,
+        "acc": 0.6
+      },
+      {
+        "precision": "gptq4",
+        "depth": 2,
+        "gold": "False",
+        "correct": 6,
+        "n": 10,
+        "acc": 0.6
+      },
+      {
+        "precision": "gptq4",
+        "depth": 2,
+        "gold": "Unknown",
+        "correct": 5,
+        "n": 10,
+        "acc": 0.5
+      },
+      {
+        "precision": "gptq4",
+        "depth": 3,
+        "gold": "True",
+        "correct": 2,
+        "n": 10,
+        "acc": 0.2
+      },
+      {
+        "precision": "gptq4",
+        "depth": 3,
+        "gold": "False",
+        "correct": 4,
+        "n": 10,
+        "acc": 0.4
+      },
+      {
+        "precision": "gptq4",
+        "depth": 3,
+        "gold": "Unknown",
+        "correct": 2,
+        "n": 10,
+        "acc": 0.2
+      },
+      {
+        "precision": "gptq4",
+        "depth": 4,
+        "gold": "True",
+        "correct": 2,
+        "n": 10,
+        "acc": 0.2
+      },
+      {
+        "precision": "gptq4",
+        "depth": 4,
+        "gold": "False",
+        "correct": 2,
+        "n": 10,
+        "acc": 0.2
+      },
+      {
+        "precision": "gptq4",
+        "depth": 4,
+        "gold": "Unknown",
+        "correct": 2,
+        "n": 10,
+        "acc": 0.2
+      },
+      {
+        "precision": "gptq4",
+        "depth": 5,
+        "gold": "True",
+        "correct": 0,
+        "n": 10,
+        "acc": 0.0
+      },
+      {
+        "precision": "gptq4",
+        "depth": 5,
+        "gold": "False",
+        "correct": 1,
+        "n": 10,
+        "acc": 0.1
+      },
+      {
+        "precision": "gptq4",
+        "depth": 5,
+        "gold": "Unknown",
+        "correct": 5,
+        "n": 10,
+        "acc": 0.5
       }
     ],
     "pred_share": [
@@ -2666,6 +3311,54 @@
         "False": 0.0,
         "Unknown": 0.0,
         "INVALID": 0.0
+      },
+      {
+        "precision": "gptq4",
+        "depth": 0,
+        "True": 0.36666666666666664,
+        "False": 0.3333333333333333,
+        "Unknown": 0.2,
+        "INVALID": 0.0
+      },
+      {
+        "precision": "gptq4",
+        "depth": 1,
+        "True": 0.23333333333333334,
+        "False": 0.36666666666666664,
+        "Unknown": 0.23333333333333334,
+        "INVALID": 0.0
+      },
+      {
+        "precision": "gptq4",
+        "depth": 2,
+        "True": 0.23333333333333334,
+        "False": 0.3,
+        "Unknown": 0.23333333333333334,
+        "INVALID": 0.0
+      },
+      {
+        "precision": "gptq4",
+        "depth": 3,
+        "True": 0.1,
+        "False": 0.23333333333333334,
+        "Unknown": 0.3333333333333333,
+        "INVALID": 0.0
+      },
+      {
+        "precision": "gptq4",
+        "depth": 4,
+        "True": 0.2,
+        "False": 0.26666666666666666,
+        "Unknown": 0.26666666666666666,
+        "INVALID": 0.0
+      },
+      {
+        "precision": "gptq4",
+        "depth": 5,
+        "True": 0.2,
+        "False": 0.06666666666666667,
+        "Unknown": 0.5333333333333333,
+        "INVALID": 0.0
       }
     ],
     "flags": [
@@ -2683,7 +3376,10 @@
       "floor: 3bit depth 2 95% CI [0.00, 0.11] includes chance (0.33)",
       "floor: 3bit depth 3 95% CI [0.00, 0.11] includes chance (0.33)",
       "floor: 3bit depth 4 95% CI [0.00, 0.11] includes chance (0.33)",
-      "floor: 3bit depth 5 95% CI [0.00, 0.11] includes chance (0.33)"
+      "floor: 3bit depth 5 95% CI [0.00, 0.11] includes chance (0.33)",
+      "floor: gptq4 depth 3 95% CI [0.14, 0.44] includes chance (0.33)",
+      "floor: gptq4 depth 4 95% CI [0.10, 0.37] includes chance (0.33)",
+      "floor: gptq4 depth 5 95% CI [0.10, 0.37] includes chance (0.33)"
     ]
   },
   "provenance": {
@@ -2726,6 +3422,18 @@
     "3bit": {
       "type": "header",
       "model": "/Users/zanbhatti/Desktop/ml-optimization/quantized-reasoning/models/Qwen3-0.6B-3bit",
+      "mode": "thinking",
+      "decoding": "greedy",
+      "max_tokens": 4096,
+      "chat_template_kwargs": {
+        "enable_thinking": true
+      },
+      "eval_set_sha256": "793b6baab4bf76ee626a666c9101607ca9e218bc77a6d359ee719279f8a91e85",
+      "prompts_sha256": "8e01678523dd7fae3a73f65b844bdd271a6a637b15d1086ac2c17163d7f54bbb"
+    },
+    "gptq4": {
+      "type": "header",
+      "model": "/Users/zanbhatti/Desktop/ml-optimization/quantized-reasoning/models/Qwen3-0.6B-gptq4",
       "mode": "thinking",
       "decoding": "greedy",
       "max_tokens": 4096,

@@ -204,6 +204,10 @@ Cost: ~134 s per puzzle at BF16 (16 tokens/s), ~44 s at 4-bit, ~13 s for 0.6B.
   It fails by *not finishing*: it thinks ~2× longer at every depth and runs past the 4,096-token
   budget on 62/180 items, rising with depth (3 at depth 0 → 19 at depth 5); some are literal loops.
 - 3-bit collapses completely: every answer runs out of budget.
+- **GPTQ 4-bit** (same size/format as RTN 4-bit): loses 12.8 pts (CI 5.6–20.0), half of RTN's 25.
+  The depth pattern remains: ~0 at depth 0, 13–23 pts at depths 2–5; slope +4.1 pts/depth
+  (CI −0.2 to +8.3, borderline). Out-of-budget answers 39 vs 62. Direct answers agree: flip rate
+  28% vs 61%, and no collapse toward one label.
 
 *Caveats to check next:* greedy decoding is known to encourage loops (Qwen recommends sampling for
 thinking), and some truncated items might finish with a bigger budget. Both could inflate the 4-bit

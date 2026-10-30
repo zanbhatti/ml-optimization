@@ -43,7 +43,8 @@ precision is the only difference.
 | Qwen3-4B-Instruct-2507 | 4B | Rounds 1–2 (direct answers) |
 | Qwen3 (hybrid thinking) | 0.6B, 1.7B, 4B | Rounds 3–4 (direct answers with `enable_thinking=False`; step-by-step with thinking on) |
 
-Precisions: BF16 and 8 / 6 / 5 / 4 / 3-bit round-to-nearest (RTN). A GPTQ 4-bit baseline is in progress.
+Precisions: BF16; 8 / 6 / 5 / 4 / 3-bit round-to-nearest (RTN); and 4-bit GPTQ (`mlx_lm.quant.gptq`, same
+format as RTN 4-bit) for 0.6B. GPTQ for 4B needs a block-by-block implementation (mlx-lm's needs ~19 GB).
 
 ## Benchmarks
 
@@ -83,12 +84,16 @@ Qwen3-0.6B, 180 puzzles (30 per depth):
 | 8-bit | 87 | 80 | 80 | 43 | 37 | 43 |
 | 4-bit | 63 | 63 | 43 | 17 | 10 | 7 |
 | 3-bit | 0 | 0 | 0 | 0 | 0 | 0 |
+| 4-bit GPTQ | 83 | 70 | 57 | 27 | 20 | 20 |
 
 - 4-bit loses 25 pts overall (95% CI 17–33), about 15 pts at depths 0–1 vs 30 at depths 2–5.
   Depth slope +3.3 pts/depth (95% CI −1.1 to +7.7): suggestive, not yet significant.
 - **4-bit fails by not finishing, not by reasoning wrongly:** on the puzzles it finishes it matches
   BF16 (68% vs 66%), but it thinks ~2× longer and runs out of budget on 62/180 puzzles, rising with
   depth (3 at depth 0 → 19 at depth 5). 3-bit never finishes.
+- **GPTQ halves the 4-bit loss but doesn't remove the depth pattern:** same format and size as RTN 4-bit,
+  but Δ = 12.8 pts (95% CI 5.6–20.0) vs 25.0 for RTN; still ~0 at depth 0 and 13–23 pts at depths 2–5
+  (slope +4.1 pts/depth, CI −0.2 to +8.3 — borderline). Out-of-budget answers drop from 62 to 39.
 - **Open check:** greedy decoding encourages repetition loops; sampling and a larger budget are being
   tested before this is claimed as a quantization effect.
 
