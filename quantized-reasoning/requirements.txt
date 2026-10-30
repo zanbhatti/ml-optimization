@@ -1,2 +1,4 @@
 mlx-lm
 datasets
+numpy
+matplotlib
