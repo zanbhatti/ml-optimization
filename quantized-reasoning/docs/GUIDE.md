@@ -140,11 +140,25 @@ bandwidth). Decode does ~2 operations per weight, so the GPU sits idle waiting f
 - Prefill should barely change with precision; quantized weights must be unpacked before use, so it
   can even be slightly slower.
 
-**Smoke-test numbers (1 repeat, 512-token context; full sweep running):** Qwen3-4B decodes at 14
-tok/s in BF16 (8.0 GB, ceiling 19, so 76% of it) vs 45 tok/s at 4-bit (2.3 GB): 3.2× faster. Prefill
-is about the same (440 vs 457 tok/s). The 0.6B gains only 2×: at 0.3 GB the weights are so small
-that fixed per-token overheads (launching GPU work, reading the KV cache) dominate, not weight
-reading.
+**Results (`analysis/benchmark/`, 3 repeats, 512-token context unless noted):**
+
+| | BF16 decode | 4-bit decode | Speedup | BF16 % of ceiling | Prefill BF16 → 4-bit | Peak memory @4k, BF16 → 4-bit |
+|---|---|---|---|---|---|---|
+| Qwen3-0.6B | 80 tok/s | 184 tok/s | 2.3× | 63% | 3002 → 3117 tok/s | 2.4 → 1.7 GB |
+| Qwen3-1.7B | 31 | 112 | 3.7× | 70% | 1127 → 1358 | 4.5 → 2.2 GB |
+| Qwen3-4B | 16 | 52 | 3.2× | 87% | 525 → 530 | 9.3 → 3.7 GB |
+
+- **The prediction holds.** Decode speed tracks weight size along the bandwidth ceiling (chart, left
+  panel). The 4B in BF16 runs at 87% of the theoretical maximum: it is almost purely waiting on memory.
+- **Prefill doesn't care about precision** (right panel): same speed within noise at every bit
+  width, because it's limited by arithmetic, not memory.
+- **Small models gain less.** The 0.6B at 4-bit reaches only 41% of its ceiling. Its weights
+  (0.34 GB) are so small that fixed per-token costs dominate: launching GPU work, reading the KV
+  cache, sampling. Shrinking weights further can't remove those.
+- **GPTQ costs nothing at inference:** identical speed and memory to RTN 4-bit (same format).
+- **Why thinking mode makes this matter:** a 1,700-token reasoning trace is almost all decode. A
+  4-bit 4B "thinks" ~3× faster than BF16, which is the practical reason people want 4-bit to work for
+  reasoning.
 
 **How it's measured:** each model is loaded in its own process (so peak memory is that model's
 alone) and gets a warm-up run. Contexts are 512 and 4,096 tokens of real ProofWriter text. 128

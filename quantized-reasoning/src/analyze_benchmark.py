@@ -65,6 +65,7 @@ def plot(rows, path):
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+    from matplotlib.ticker import FuncFormatter, NullFormatter
     ink, muted, grid, surface = "#0b0b0b", "#52514e", "#e6e5e0", "#fcfcfb"
     colors = ["#2a78d6", "#eb6834", "#1baf7a", "#8a5cd1"]
     families = list(dict.fromkeys(r["family"] for r in rows))
@@ -76,14 +77,16 @@ def plot(rows, path):
     left.plot(xs, [BANDWIDTH_GBS / x for x in xs], color=muted, lw=1, ls="--")
     left.text(xs[0] * 1.05, BANDWIDTH_GBS / xs[0] * 0.8, f"bandwidth ceiling\n{BANDWIDTH_GBS:.0f} GB/s ÷ size",
               fontsize=7, color=muted, va="top")
+    used = [p for p in ORDER if any(r["precision"] == p for r in rows)]
     for color, family in zip(colors, families):
         mine = [r for r in rows if r["family"] == family]
-        left.plot([r["disk_gb"] for r in mine], [r["decode_tps_512"] for r in mine], color=color, lw=1.5,
+        rtn = [r for r in mine if r["precision"] != "gptq4"]  # GPTQ has RTN-4bit's exact format/size
+        left.plot([r["disk_gb"] for r in rtn], [r["decode_tps_512"] for r in rtn], color=color, lw=1.5,
                   marker="o", ms=5, markeredgecolor=surface, markeredgewidth=1.5, label=label(family))
-        for r in mine:
-            left.annotate(r["precision"], (r["disk_gb"], r["decode_tps_512"]), xytext=(4, 4),
-                          textcoords="offset points", fontsize=6, color=muted)
-        right.plot([ORDER.index(r["precision"]) for r in mine], [r[f"prefill_tps_{ctx}"] for r in mine],
+        for r in (rtn[0], rtn[-1]):  # name only the ends: BF16 (right) and lowest bits (left)
+            left.annotate(r["precision"], (r["disk_gb"], r["decode_tps_512"]), xytext=(0, -11),
+                          textcoords="offset points", fontsize=6.5, color=muted, ha="center")
+        right.plot([used.index(r["precision"]) for r in mine], [r[f"prefill_tps_{ctx}"] for r in mine],
                    color=color, lw=1.5, marker="o", ms=5, markeredgecolor=surface, markeredgewidth=1.5,
                    label=label(family))
     left.set_xscale("log")
@@ -91,9 +94,9 @@ def plot(rows, path):
     left.set_xlabel("Weight size (GB, log scale)", fontsize=9, color=muted)
     left.set_ylabel("Decode tokens/s (log scale)", fontsize=9, color=muted)
     left.set_title("Decode: smaller weights → faster, tracking bandwidth", fontsize=10, color=ink, loc="left")
-    used = sorted({ORDER.index(r["precision"]) for r in rows})
-    right.set_xticks(used, [ORDER[i] for i in used])
+    right.set_xticks(range(len(used)), used)
     right.set_yscale("log")
+    right.set_ylim(min(r[f"prefill_tps_{ctx}"] for r in rows) * 0.6, max(r[f"prefill_tps_{ctx}"] for r in rows) * 1.6)
     right.set_ylabel(f"Prefill tokens/s @{ctx} context (log scale)", fontsize=9, color=muted)
     right.set_title("Prefill: compute-bound, precision barely matters", fontsize=10, color=ink, loc="left")
     for ax in (left, right):
@@ -104,7 +107,14 @@ def plot(rows, path):
         for side in ("left", "bottom"):
             ax.spines[side].set_color("#c3c2b7")
         ax.tick_params(colors=muted, labelsize=8)
-    right.legend(frameon=False, fontsize=8, loc="lower left")
+        ax.yaxis.set_major_formatter(FuncFormatter(lambda v, _: f"{v:g}"))
+        ax.yaxis.set_minor_formatter(NullFormatter())
+    left.set_yticks([10, 20, 50, 100, 200, 500])
+    left.set_xticks([0.25, 0.5, 1, 2, 4, 8])
+    left.xaxis.set_major_formatter(FuncFormatter(lambda v, _: f"{v:g}"))
+    left.xaxis.set_minor_formatter(NullFormatter())
+    right.set_yticks([300, 500, 1000, 2000, 3000])
+    left.legend(frameon=False, fontsize=8, loc="lower left")
     fig.tight_layout()
     fig.savefig(path, facecolor=surface)
 
