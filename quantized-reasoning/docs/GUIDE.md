@@ -283,9 +283,39 @@ Cost: ~134 s per puzzle at BF16 (16 tokens/s), ~44 s at 4-bit, ~13 s for 0.6B.
   (CI −0.2 to +8.3, borderline). Out-of-budget answers 39 vs 62. Direct answers agree: flip rate
   28% vs 61%, and no collapse toward one label.
 
-*Caveats to check next:* greedy decoding is known to encourage loops (Qwen recommends sampling for
-thinking), and some truncated items might finish with a bigger budget. Both could inflate the 4-bit
-"failure to finish" — they need testing before we claim a compression effect.
+*Caveats checked in week 2 (below):* greedy decoding and the token budget.
+
+### Round 5 — the greedy-decoding check (week 2, 0.6B)
+
+Files: `analysis/thinking/qwen3-0.6b/decoding_check.{md,png}`. Lenient parser, because sampled 4-bit
+often writes its answer as prose ("The statement is **true**"), which the strict parser rejects; that
+would inflate the strict penalty to 36 points for a formatting reason.
+
+| Setup | 4-bit Δ vs BF16 | Depth slope | 4-bit truncated | Accuracy on answered, BF16 vs 4-bit |
+|---|---|---|---|---|
+| Greedy, 4,096 tokens | 18.3 [10.0, 26.7] | +4.1 [−0.1, +8.3] | 34% | 59% vs 62% |
+| Greedy, 8,192 tokens | 17.8 [9.4, 26.1] | +3.1 [−1.2, +7.2] | 30% | — |
+| Sampled, 2 seeds | 17.8 [11.1, 24.4] | −1.1 [−4.9, +2.6] | 16% | 66% vs 57% |
+
+**What it means, in plain words:**
+1. **More room doesn't help.** Given twice the tokens, 54 of 62 stuck 4-bit outputs still ran out.
+   They weren't slow, they were looping (repeating the same sentence). GPTQ: 39 of 39 still ran out.
+2. **Sampling breaks most loops,** halving truncations, but 4-bit still loses ~18 points. So the
+   overall loss is not a greedy artifact; it's robust.
+3. **The failure mode changes.** Under greedy, 4-bit fails by *looping* and is fine when it
+   finishes. Under sampling, it loops less but makes more *wrong* conclusions when it finishes
+   (57% vs 66%). The damage is the same size; it just shows up differently. One interpretation: the
+   quantized model's confidence in each next step is flatter. Greedy turns that into getting stuck;
+   sampling turns it into wandering off.
+4. **The depth effect does not survive.** Under sampling, Δ is flat across depth (slope ≈ −1). The
+   "deeper puzzles suffer more" pattern was tied to greedy looping, which builds up over longer chains.
+
+**Revised claim:** at 0.6B, 4-bit RTN costs ~18 points of reasoning accuracy at every depth, robust to
+decoding and budget. The depth-dependent part is a greedy-decoding phenomenon.
+
+**Why not give up on the depth hypothesis yet:** BF16 0.6B is near chance at depths 3–5 (38–48%),
+which squeezes how big Δ can be on deep puzzles. 1.7B (week 3) has more headroom and is the real
+test. Week 3 should use sampling, since that is how these models are meant to run.
 
 ---
 
@@ -305,6 +335,8 @@ thinking), and some truncated items might finish with a bigger budget. Both coul
 | Benchmark: one subprocess per model, EOS blocked, median of 3 | Clean per-model peak memory; every run does identical work; medians resist one-off hiccups |
 | Decoding check: Qwen's own sampling settings, 2 seeds | The "fairest" non-greedy setup is the one the model's makers recommend; 2 seeds shows how much randomness moves the result |
 | 8k budget: rerun only truncated items | Greedy is deterministic, so finished items can't change; halves the compute |
+| Decoding check scored with the lenient parser | Sampled 4-bit states answers in prose ("is **true**"); strict scoring would count format drift as reasoning failure |
+| Week 3+ runs use sampling (2 seeds) as the main setup | It's how Qwen3 is meant to run for thinking, and the week-2 check showed greedy changes the failure mode |
 | Balanced ("interleaved") item order | Any first-N subset has equal items per depth and label, so partial runs are still fair comparisons |
 
 ---

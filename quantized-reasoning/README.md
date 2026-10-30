@@ -94,8 +94,22 @@ Qwen3-0.6B, 180 puzzles (30 per depth):
 - **GPTQ halves the 4-bit loss but doesn't remove the depth pattern:** same format and size as RTN 4-bit,
   but Δ = 12.8 pts (95% CI 5.6–20.0) vs 25.0 for RTN; still ~0 at depth 0 and 13–23 pts at depths 2–5
   (slope +4.1 pts/depth, CI −0.2 to +8.3 — borderline). Out-of-budget answers drop from 62 to 39.
-- **Open check:** greedy decoding encourages repetition loops; sampling and a larger budget are being
-  tested before this is claimed as a quantization effect.
+- **Decoding check (week 2):** the 4-bit loss is real, but the *extra* loss on deep puzzles comes
+  from greedy decoding.
+  - Doubling the budget to 8,192 tokens rescues nothing: 54 of 62 truncated 4-bit outputs still run
+    out (they loop), and Δ stays put.
+  - With Qwen's recommended sampling (temp 0.6, top-p 0.95, 2 seeds), truncations halve (34% → 16%),
+    yet 4-bit still loses 17.8 pts (95% CI 11.1–24.4, lenient parser).
+  - Under sampling the depth slope vanishes: −1.1 pts/depth (CI −4.9 to +2.6). And when 4-bit does
+    finish, it is now less accurate than BF16 (57% vs 66%).
+  - **Current claim:** at 0.6B, 4-bit RTN costs ~18 points of reasoning accuracy across all depths.
+    "Hurts deep reasoning more" holds only under greedy decoding, where 4-bit loops. Caveat: BF16 0.6B
+    is near chance at depths 3–5, which limits how large a depth effect can look; 1.7B is next.
+
+**4. Speed and memory: why 4-bit is worth wanting.** Decoding reads every weight once per token, so
+it is bound by memory bandwidth (M3 Pro: 150 GB/s). Qwen3-4B decodes at 16 tok/s in BF16 (87% of the
+bandwidth ceiling) vs 52 tok/s at 4-bit (3.2×); peak memory 9.3 → 3.7 GB. Prompt processing (prefill)
+is compute-bound and unchanged by precision. GPTQ has identical speed to RTN. `analysis/benchmark/`.
 
 Full tables and charts: `analysis/` (per round and model).
 

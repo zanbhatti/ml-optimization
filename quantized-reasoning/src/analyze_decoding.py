@@ -93,6 +93,28 @@ def summarize(runs, lenient=False):
     return out
 
 
+def outcome_md(raw, precisions):
+    """Per run file, lenient parser: what happened to each item. 'Accuracy on answered' separates
+    reasoning errors (wrong label) from failures to finish (truncated) or to name a label."""
+    files = [(f"greedy, 4k", f"proofwriter_{p}.jsonl", p) for p in precisions]
+    files += [(f"sampled seed {s}", f"proofwriter_{p}{SAMPLING.format(seed=s)}.jsonl", p)
+              for s in SEEDS for p in precisions]
+    lines = ["## What happened to each item (lenient parser)", "",
+             "| Run | Precision | Correct | Wrong label | Truncated | No label | Accuracy on answered |",
+             "|---|---|---|---|---|---|---|"]
+    for name, filename, p in files:
+        if not (raw / filename).exists():
+            continue
+        rows = load_run(raw / filename)[1].values()
+        preds = [(lenient_prediction(r["output"]), r["gold"]) for r in rows]
+        right = sum(a == g for a, g in preds)
+        trunc = sum(a == TRUNCATED for a, _ in preds)
+        none = sum(a == "INVALID" for a, _ in preds)
+        wrong = len(preds) - right - trunc - none
+        lines.append(f"| {name} | {p} | {right} | {wrong} | {trunc} | {none} | {right / max(1, right + wrong):.0%} |")
+    return "\n".join(lines) + "\n"
+
+
 def pct(x):
     return f"{100 * x:.0f}"
 
@@ -122,7 +144,7 @@ def summary_md(results):
     return "\n".join(lines) + "\n"
 
 
-def plot(results, path, precision="4bit"):
+def plot(results, path, precision="4bit", scoring="lenient"):
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -133,7 +155,7 @@ def plot(results, path, precision="4bit"):
     ax.set_facecolor(surface)
     ax.axhline(0, color="#c3c2b7", lw=1)
     for k, (color, (name, res)) in enumerate(zip(colors, results.items())):
-        d = res["strict"]["delta"].get(precision)
+        d = res[scoring]["delta"].get(precision)
         if not d:
             continue
         x = np.array(DEPTHS) + (k - 1) * 0.08
@@ -141,11 +163,12 @@ def plot(results, path, precision="4bit"):
         lo, hi = (100 * np.array(v) for v in zip(*d["by_depth_ci"]))
         ax.errorbar(x, y, yerr=[y - lo, hi - y], color=color, lw=2, marker="o", ms=5, capsize=2, elinewidth=1,
                     markeredgecolor=surface, label=f"{name}: Δ {100 * d['overall']:+.1f}")
+    ax.set_ylim(-15, 68)  # headroom so the legend sits above the data
     ax.set_xticks(DEPTHS)
     ax.set_xlabel("Reasoning depth (steps needed)", fontsize=9, color=muted)
     ax.set_ylabel(f"BF16 − {precision} accuracy (points)", fontsize=9, color=muted)
     ax.set_title(f"Does the 4-bit penalty survive non-greedy decoding and a bigger budget?\n"
-                 f"Qwen3-0.6B thinking mode, ProofWriter, 95% CIs", fontsize=10, color=ink, loc="left")
+                 f"Qwen3-0.6B thinking mode, ProofWriter, {scoring} parser, 95% CIs", fontsize=10, color=ink, loc="left")
     ax.grid(axis="y", color=grid, lw=0.8)
     for side in ("top", "right"):
         ax.spines[side].set_visible(False)
@@ -167,10 +190,10 @@ def main():
                for name, runs in conditions(raw, args.precisions).items() if "bf16" in runs and len(runs) > 1}
     out = ROOT / "analysis" / "thinking" / args.family
     out.mkdir(parents=True, exist_ok=True)
-    (out / "decoding_check.md").write_text(summary_md(results))
+    (out / "decoding_check.md").write_text(summary_md(results) + "\n" + outcome_md(raw, args.precisions))
     (out / "decoding_check.json").write_text(json.dumps(results, indent=1))
     plot(results, out / "decoding_check.png")
-    print(summary_md(results))
+    print(outcome_md(raw, args.precisions))
 
 
 if __name__ == "__main__":
