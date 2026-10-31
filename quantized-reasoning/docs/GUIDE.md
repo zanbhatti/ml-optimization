@@ -159,9 +159,16 @@ Extra memory beyond the weights: ~0.4 GB (0.6B), ~1.0 GB (1.7B), ~1.4 GB (4B).
   integer, scale and bias is *bit-identical* to mlx-lm's output, with tied and untied output layers.
   The tests caught one real bug: mlx-lm adds damping to H *in place*. Once q/k/v share one H, the
   first layer's damping leaked into the next two. Fixed by copying H before damping.
-- **Planned validation on 0.6B** against the existing mlx-lm `gptq4` model: same integers, same
-  per-layer output error, same forced-choice and thinking results within noise, plus peak memory.
-  Building 1.7B/4B waits until that's reviewed.
+- **Validation on 0.6B** against the existing mlx-lm `gptq4` model (`src/validate_gptq.py`,
+  `run_gptq_validation.sh`, output in `analysis/gptq_validation/qwen3-0.6b/validation.json`):
+  - All 196 GPTQ layers have *identical* integers (100%, max level difference 0), and the per-layer
+    output error is identical too (ratio 1.000, mean relative error 0.0032 for both).
+  - Forced choice: the same 540 predictions, identical log-probs, KL 0. Thinking: all 180 outputs are
+    identical token for token (46.1%).
+  - Peak memory is 1.30 GB MLX (1.9 GB process), against mlx-lm's ~2 GB of Hessians alone. The build
+    took ~3.2 min.
+  - So it is the same algorithm, just with less memory. Building 1.7B/4B still waits until that's
+    reviewed.
 
 **`--sequential` (not used yet):** the GPTQ paper feeds each block the output of the
 *already-quantized* previous blocks, so later layers learn to correct earlier rounding. mlx-lm
