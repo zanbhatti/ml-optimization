@@ -21,12 +21,16 @@ BITS = (8, 6, 5, 4, 3)
 # "gptq4": GPTQ 4-bit (mlx_lm.quant.gptq) — same bits and group size as RTN "4bit", so only the
 # rounding method differs. Non-Linear layers (the tied embedding/output layer in Qwen3) use the same
 # 4-bit/64 RTN as the "4bit" model instead of mlx_lm's 6-bit default.
-PRECISION_NAMES = ["bf16"] + [f"{b}bit" for b in BITS] + ["gptq4"]
+# "gptq4b": the same GPTQ computed block by block (src/gptq_blockwise.py) so it fits in memory at 1.7B/4B.
+# Bit-identical to mlx_lm on tiny test models; validated against "gptq4" on 0.6B before use at larger sizes.
+PRECISION_NAMES = ["bf16"] + [f"{b}bit" for b in BITS] + ["gptq4", "gptq4b"]
 GROUP_SIZE = 64
 GPTQ = {"bits": 4, "group_size": GROUP_SIZE, "fallback_bits": 4, "fallback_group_size": GROUP_SIZE,
         "num_samples": -1, "sequence_length": 512, "seed": 123}
 # mlx_lm's GPTQ holds one fp32 Hessian (d_in x d_in) per Linear layer for the whole model at once.
 GPTQ_HESSIAN_BUDGET_GB = 8.0
+# Block-wise GPTQ holds one block's Hessians plus two copies of the calibration hidden states.
+GPTQ_BLOCKWISE_BUDGET_GB = 2.0
 # Hybrid Qwen3 checkpoints answer directly only with thinking disabled; templates
 # without the switch (e.g. Instruct-2507) ignore it.
 CHAT_TEMPLATE_KWARGS = {"enable_thinking": False}
@@ -49,6 +53,16 @@ def gptq_hessian_gb(config):
     return per_layer * 4 * config["num_hidden_layers"] / 2**30
 
 
+def gptq_blockwise_gb(config, n_tokens=None):
+    """One block's 4 shared Hessians (qkv, o, gate/up, down) in fp32, plus the calibration states
+    entering and leaving the block (bf16). n_tokens defaults to the calibration file's ~100k tokens."""
+    d, ff = config["hidden_size"], config["intermediate_size"]
+    attn = config["num_attention_heads"] * config.get("head_dim", d // config["num_attention_heads"])
+    hessians = (d * d * 2 + attn * attn + ff * ff) * 4  # qkv and gate/up both read d_model inputs
+    states = 2 * (n_tokens or 100_000) * d * 2
+    return (hessians + states) / 2**30
+
+
 def ensure_quantized(family, precision):
     """Build a quantized checkpoint from the cached BF16 snapshot if it is missing."""
     path = Path(model_path(family, precision))
@@ -56,6 +70,14 @@ def ensure_quantized(family, precision):
         return
     from huggingface_hub import snapshot_download
     source = snapshot_download(FAMILIES[family], local_files_only=True)
+    if precision == "gptq4b":
+        need = gptq_blockwise_gb(json.loads((Path(source) / "config.json").read_text()))
+        if need > GPTQ_BLOCKWISE_BUDGET_GB:
+            raise MemoryError(f"Block-wise GPTQ for {family} needs ~{need:.1f} GB beyond the weights")
+        args = [f"--{k.replace('_', '-')}={v}" for k, v in GPTQ.items()]
+        subprocess.run([sys.executable, str(Path(__file__).with_name("gptq_blockwise.py")), "--model", source,
+                        "--mlx-path", str(path), *args], check=True)
+        return
     if precision == "gptq4":
         need = gptq_hessian_gb(json.loads((Path(source) / "config.json").read_text()))
         if need > GPTQ_HESSIAN_BUDGET_GB:

@@ -19,7 +19,7 @@ from pathlib import Path
 from proofwriter_test import ROOT
 
 BANDWIDTH_GBS = 150.0  # Apple M3 Pro spec (unified memory)
-ORDER = ["bf16", "8bit", "6bit", "5bit", "4bit", "3bit", "gptq4"]
+ORDER = ["bf16", "8bit", "6bit", "5bit", "4bit", "3bit", "gptq4", "gptq4b"]
 FAMILY_ORDER = ["qwen3-0.6b", "qwen3-1.7b", "qwen3-4b", "qwen3-4b-instruct-2507"]
 
 
@@ -80,7 +80,7 @@ def plot(rows, path):
     used = [p for p in ORDER if any(r["precision"] == p for r in rows)]
     for color, family in zip(colors, families):
         mine = [r for r in rows if r["family"] == family]
-        rtn = [r for r in mine if r["precision"] != "gptq4"]  # GPTQ has RTN-4bit's exact format/size
+        rtn = [r for r in mine if not r["precision"].startswith("gptq")]  # GPTQ has RTN-4bit's exact format/size
         left.plot([r["disk_gb"] for r in rtn], [r["decode_tps_512"] for r in rtn], color=color, lw=1.5,
                   marker="o", ms=5, markeredgecolor=surface, markeredgewidth=1.5, label=label(family))
         for r in (rtn[0], rtn[-1]):  # name only the ends: BF16 (right) and lowest bits (left)

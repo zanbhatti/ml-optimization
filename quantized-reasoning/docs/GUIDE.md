@@ -79,6 +79,7 @@ Why thinking? See §8 — without it, the models can't do multi-step reasoning a
 | `src/analyze_forced_choice.py` | Rounds 2–3 analysis: margins, KL, flip rates, depth slopes, confidence control |
 | `src/size_trend.py` | Combines per-size analyses into one cross-size summary + chart |
 | `src/analyze_thinking.py` | Round-4 analysis: accuracy and penalties by depth, depth slope, thinking length, truncations, "wrong vs didn't finish" breakdown, and a lenient-parser sensitivity check |
+| `src/gptq_blockwise.py` | Block-by-block GPTQ: mlx-lm's math, one transformer block's Hessians at a time, so 1.7B/4B fit in memory |
 | `src/benchmark.py` | Week 2: speed and memory per model and precision (prefill and decode tokens/s, peak memory), one subprocess per model |
 | `src/analyze_benchmark.py` | Week 2: benchmark table + chart, and the bandwidth-ceiling comparison |
 | `src/analyze_decoding.py` | Week 2: the greedy-decoding check (does the 4-bit penalty survive sampling and an 8k budget?) |
@@ -117,6 +118,54 @@ time, ~0.5 GB) — planned.
 
 **Why it matters:** if 4-bit damage mostly disappears under GPTQ, the finding is about naive rounding,
 not about 4-bit itself. Reviewers and interviewers will ask.
+
+#### A toy example: why compensating beats rounding
+
+A layer with two weights, both 1.4, allowed values are whole numbers. Its inputs are strongly
+correlated: in practice x₁ ≈ x₂, say both 1. True output: 1.4 + 1.4 = **2.8**.
+
+- **Round-to-nearest:** 1.4 → 1 and 1.4 → 1. Output 2.0. **Error 0.8.** Each weight was rounded
+  "well" on its own, but both errors point the same way and add up.
+- **GPTQ:** round the first weight 1.4 → 1 (error −0.4). Because x₂ ≈ x₁, the second weight can make
+  up for it: nudge it to 1.4 + 0.4 = 1.8, then round → 2. Output 1 + 2 = 3.0. **Error 0.2.**
+
+GPTQ made one weight *worse* on its own (1.4 → 2 is further than 1.4 → 1) to make the layer's
+*output* better. The Hessian H = XXᵀ is what tells it which weights can cover for which: here,
+x₁ and x₂ move together, so w₂ can absorb w₁'s error. With uncorrelated inputs there's nothing to
+exploit and GPTQ reduces to plain rounding.
+
+#### Block-by-block GPTQ — our own implementation (`src/gptq_blockwise.py`, precision `gptq4b`)
+
+**Problem:** mlx-lm's GPTQ holds every layer's H at once (19.3 GB for 4B). Building the 1.7B model
+hit 13.3 GB and was stopped by our 12 GB safety rule.
+
+**Idea:** you don't need all the H's at once, only the current layer's. So walk through the model
+one transformer block at a time:
+1. Keep the calibration text's hidden states X at the input of the current block (~0.2–0.5 GB).
+2. Run just that block on X and collect its H's. Layers that read the *same* input have the
+   *same* H, so q/k/v share one, gate/up share one, and o_proj and down_proj get their own: 4
+   per block instead of 7.
+3. Quantize the block's layers with exactly mlx-lm's column-by-column math (1% damping,
+   Cholesky inverse, group-wise scales).
+4. The block's output, computed with its **original** weights, becomes the next block's X. That's
+   what mlx-lm does too (all its H's come from one pass through the full-precision model), so
+   the result should be the same.
+5. Free the H's and move on.
+
+Extra memory beyond the weights: ~0.4 GB (0.6B), ~1.0 GB (1.7B), ~1.4 GB (4B).
+
+**How we know it's right:**
+- **Unit tests** (`tests/test_gptq_blockwise.py`): on tiny 2-block Qwen3 models, every quantized
+  integer, scale and bias is *bit-identical* to mlx-lm's output, with tied and untied output layers.
+  The tests caught one real bug: mlx-lm adds damping to H *in place*. Once q/k/v share one H, the
+  first layer's damping leaked into the next two. Fixed by copying H before damping.
+- **Planned validation on 0.6B** against the existing mlx-lm `gptq4` model: same integers, same
+  per-layer output error, same forced-choice and thinking results within noise, plus peak memory.
+  Building 1.7B/4B waits until that's reviewed.
+
+**`--sequential` (not used yet):** the GPTQ paper feeds each block the output of the
+*already-quantized* previous blocks, so later layers learn to correct earlier rounding. mlx-lm
+doesn't do this. The flag is there for a possible future experiment.
 
 ### Speed and memory — why anyone quantizes (week 2)
 
@@ -359,3 +408,6 @@ test. Week 3 should use sampling, since that is how these models are meant to ru
     times is each weight used per fetch?)
 14. 4-bit is 3.5× smaller than BF16. Why does the 4B decode ~3.2× faster but the 0.6B only ~2×?
 15. What result from the decoding check would make you drop the claim "4-bit hurts deep reasoning"?
+16. In the two-weight toy example, why does GPTQ deliberately round one weight the "wrong" way?
+17. Why can q_proj, k_proj and v_proj share one Hessian, and why does block-by-block GPTQ give the
+    same answer as doing the whole model at once?

@@ -19,8 +19,8 @@ from analyze import CHANCE, ci, wilson
 from models import DEFAULT_FAMILY, FAMILIES
 from proofwriter_test import DEPTHS, LABELS, ROOT
 
-ORDER = ["bf16", "8bit", "6bit", "5bit", "4bit", "3bit", "gptq4"]
-BITS = {"8bit": 8, "6bit": 6, "5bit": 5, "4bit": 4, "3bit": 3, "gptq4": 4}
+ORDER = ["bf16", "8bit", "6bit", "5bit", "4bit", "3bit", "gptq4", "gptq4b"]
+BITS = {"8bit": 8, "6bit": 6, "5bit": 5, "4bit": 4, "3bit": 3, "gptq4": 4, "gptq4b": 4}
 RTN = ["8bit", "6bit", "5bit", "4bit", "3bit"]  # the bit-width curve; GPTQ is reported in tables
 BOOT = 10_000
 SEED = 0
